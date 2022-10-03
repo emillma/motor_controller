@@ -1,0 +1,9 @@
+.program pwm_loop
+.wrap_target
+    
+    irq clear 4
+    irq set 4
+    mov x, osr
+loop:
+    jmp x-- loop  
+.wrap 

@@ -1,0 +1,18 @@
+;piofixed 1664460232.449987
+piofixed 1664460213.8574061
+.program encoder
+.wrap_target
+    in null 32
+    in pins 3
+    mov y isr
+    jmp x!=y process
+.wrap  
+process:
+    jmp pin setzero
+    
+setzero:
+    set x 0
+
+    in x 32
+
+;set autopull
