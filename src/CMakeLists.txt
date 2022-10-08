@@ -28,9 +28,10 @@ target_sources(blinker PUBLIC
 
 target_link_libraries(blinker PRIVATE 
         pico_stdlib 
-        hardware_spi 
+        hardware_pwm 
         hardware_pio
         hardware_irq
+        # hardware_spi 
         pico_multicore)
 
 pico_enable_stdio_usb(blinker 0)

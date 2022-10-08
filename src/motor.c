@@ -1,16 +1,7 @@
-#include <stdio.h>
-#include "pico/stdlib.h"
-#include "hardware/uart.h"
 #include "hardware/pwm.h"
 
-int main()
+void configure_pwm()
 {
-    // Set up our UART with the required speed.
-    stdio_init_all();
-    uart_init(uart0, 115200);
-    gpio_set_function(0, GPIO_FUNC_UART);
-    gpio_set_function(1, GPIO_FUNC_UART);
-
     uint pwm_out_start = 10;
     for (uint pin = pwm_out_start; pin < pwm_out_start + 6; pin += 2)
     {
@@ -30,17 +21,5 @@ int main()
         // pwm_set_enabled(slice_num, true);
         pwm_set_output_polarity(slice_num, false, true);
         pwm_set_phase_correct(slice_num, true);
-    }
-    pwm_set_mask_enabled(0b1111111);
-
-    while (true)
-    {
-        printf("Start\n");
-        for (uint i = 0; i < 6; i++)
-        {
-            int x = pwm_gpio_to_slice_num(i + pwm_out_start);
-            printf("%d", x);
-        };
-        sleep_ms(1000);
     }
 }

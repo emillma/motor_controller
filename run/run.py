@@ -24,4 +24,5 @@ ser = serial.Serial('/dev/ttyACM0', 115200)
 a = subprocess.run(cmd, shell=True, capture_output=True)
 print('Waiting for output...')
 while True:
-    print(ser.readline().decode('utf-8').strip())
+    if data := ser.read_all():
+        print(data.decode('utf-8'), end='')
