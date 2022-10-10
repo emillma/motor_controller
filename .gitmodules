@@ -4,3 +4,7 @@
 	path = src/pico-sdk
 	url = https://github.com/raspberrypi/pico-sdk.git
  
+ 
+[submodule ".devcontainer"]
+	path = .devcontainer
+	url = https://github.com/emillma/devcontainer
