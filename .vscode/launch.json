@@ -18,7 +18,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/run/run.py",
             "args": [
-                "--program=/workspaces/motorcontroller/motor_controller/build/blinker.elf",
+                "--program=/workspaces/motor_controller/build/blinker.elf",
             ],
             "preLaunchTask": "make",
             "console": "integratedTerminal",

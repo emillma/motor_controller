@@ -21,7 +21,8 @@ cmd = f'{openocd_bin} {scripts} {configs} {run}'
 
 print('Flashing...')
 ser = serial.Serial('/dev/ttyACM0', 115200)
-a = subprocess.run(cmd, shell=True, capture_output=True)
+a = subprocess.run(cmd, shell=True, capture_output=True, check=True)
+print(a)
 print('Waiting for output...')
 while True:
     if data := ser.read_all():

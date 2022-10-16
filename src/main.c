@@ -2,6 +2,7 @@
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
 #include "hardware/pwm.h"
+#include "hardware/pio.h"
 
 int main()
 {
@@ -10,7 +11,6 @@ int main()
     uart_init(uart0, 115200);
     gpio_set_function(0, GPIO_FUNC_UART);
     gpio_set_function(1, GPIO_FUNC_UART);
-
     uint pwm_out_start = 10;
     for (uint pin = pwm_out_start; pin < pwm_out_start + 6; pin += 2)
     {
@@ -35,11 +35,11 @@ int main()
 
     while (true)
     {
-        printf("Start\n");
+        printf("Emil\n");
         for (uint i = 0; i < 6; i++)
         {
             int x = pwm_gpio_to_slice_num(i + pwm_out_start);
-            printf("%d", x);
+            printf("katt %d\n", x);
         };
         sleep_ms(1000);
     }
