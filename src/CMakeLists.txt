@@ -15,7 +15,7 @@ pico_sdk_init()
 add_executable(blinker)
 
 # pico_generate_pio_header(spi_slave ${CMAKE_CURRENT_LIST_DIR}/pio/trigger.pio)
-# pico_generate_pio_header(spi_slave ${CMAKE_CURRENT_LIST_DIR}/pio/selecter.pio)
+pico_generate_pio_header(blinker ${CMAKE_CURRENT_LIST_DIR}/pio/encoder.pio)
 
 include_directories(${PROJECT_SOURCE_DIR})
 

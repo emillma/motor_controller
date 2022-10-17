@@ -1,25 +1,12 @@
-.define public encoder_timeout 12
-
-
 .program encoder
-    out null 32
-
-
-timeout:
-    mov osr, ~ osr
-    out null, 32-encoder_timeout
-    in osr, encoder_timeout
+process:
     in x, 2
-    in x, 3
     push noblock
-
+    mov x, y
 .wrap_target
     in null, 32
     in pins, 3
     mov y, isr
     jmp x!=y process
-    mov y, osr
-    jmp y-- timeout
-
 .wrap  
 
