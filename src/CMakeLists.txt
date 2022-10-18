@@ -31,6 +31,7 @@ target_link_libraries(blinker PRIVATE
         hardware_pwm 
         hardware_pio
         hardware_irq
+        hardware_clocks
         # hardware_spi 
         pico_multicore)
 

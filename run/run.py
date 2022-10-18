@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import serial
 import os
-
+import re
 parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('--program', help='File to run')
 args = parser.parse_args()
@@ -25,5 +25,13 @@ a = subprocess.run(cmd, shell=True, capture_output=True, check=True)
 # print(a)
 print('Waiting for output...')
 while True:
-    if data := ser.read_all():
-        print(data.decode('utf-8'), end='')
+    if data_raw := ser.read_until('\r\n'.encode()):
+        data = data_raw.decode('utf-8')
+        if number := re.search(r'-?\d+', data):
+            val = int(number[0])
+            if val == 0:
+                ...
+        # data = data.split('\r\n')
+        # val = int(data[0])
+            # if val % 100 == 0:
+            print(f'{val}')

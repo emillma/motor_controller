@@ -16,4 +16,8 @@
     },
     "cmake.buildBeforeRun": true,
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "files.associations": {
+        "*.spec": "python",
+        "clocks.h": "c"
+    },
 }
