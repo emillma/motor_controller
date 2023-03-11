@@ -9,11 +9,11 @@ import json
 
 pico_dir = Path("D:\\")
 uf2_file = Path(__file__).parents[1].joinpath("build/ins_link.uf2")
-assert uf2_file.is_file()
 
 
 async def attempt_flash():
     while True:
+        assert uf2_file.is_file()
         if pico_dir.is_dir():
             print("flashing!")
             copy(uf2_file, pico_dir.joinpath(uf2_file.name))
@@ -24,9 +24,9 @@ async def attempt_flash():
 async def serial_read():
     try:
         ports = list_ports.comports()
-        if len(ports) == 1:
-            name = ports[0].name
-            reader, writer = await serial_asyncio.open_serial_connection(url=name)
+        assert len(ports) == 1
+        name = ports[0].name
+        reader, writer = await serial_asyncio.open_serial_connection(url=name)
         while True:
             data = await reader.readuntil(b"\n")
             print(data)
@@ -62,8 +62,8 @@ async def websocket_read():
 async def main():
     await asyncio.gather(
         # attempt_flash(),
-        # serial_read(),
-        websocket_read(),
+        serial_read(),
+        # websocket_read(),
     )
 
 
