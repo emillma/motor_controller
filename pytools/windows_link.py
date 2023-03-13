@@ -1,70 +1,90 @@
+from dataclasses import dataclass, field
+import itertools
 from pathlib import Path
-from shutil import copy
 import asyncio
+import websockets
+from shutil import copy
 from serial.tools import list_ports
+import serial
 import serial_asyncio
-import websockets.exceptions
-import websockets.client
-import json
+from websockets.legacy.server import Serve, WebSocketServerProtocol
+from websockets.exceptions import ConnectionClosedOK
+import logging
+import concurrent.futures
 
 pico_dir = Path("D:\\")
-uf2_file = Path(__file__).parents[1].joinpath("build/ins_link.uf2")
 
 
-async def attempt_flash():
-    while True:
-        assert uf2_file.is_file()
-        if pico_dir.is_dir():
-            print("flashing!")
-            copy(uf2_file, pico_dir.joinpath(uf2_file.name))
-            print("done")
-        await asyncio.sleep(1)
+class AsyncSerial:
+    def __init__(self, baudrate=None):
+        kwargs = {"do_not_open": True}
+
+        if baudrate is not None:
+            kwargs["baudrate"] = baudrate
+
+        self.con = serial.serial_for_url(url="COM3", **kwargs)
+        self.pool = None
+        self.loop = None
+
+    async def __aenter__(self):
+        self.pool = concurrent.futures.ThreadPoolExecutor().__enter__()
+        self.loop = asyncio.get_running_loop()
+        for _ in range(10):
+            try:
+                self.con.open()
+                break
+            except serial.SerialException:
+                await asyncio.sleep(0.2)
+        else:
+            raise serial.SerialException("Could not open serial port")
+        return self
+
+    async def __aexit__(self, *exc):
+        self.pool.__exit__(*exc)
+        if self.con.is_open:
+            self.con.close()
+
+    async def read_until(self, pattern):
+        return await self.loop.run_in_executor(self.pool, self.con.read_until, pattern)
+
+    def write(self, data: bytes):
+        self.con.write(data)
+
+    @staticmethod
+    async def trigger_bootsel():
+        con = serial.serial_for_url(url="COM3", baudrate=1200, do_not_open=True)
+        try:
+            con.open()
+        except serial.SerialException:
+            pass
+        finally:
+            con.close()
 
 
-async def serial_read():
-    try:
-        ports = list_ports.comports()
-        assert len(ports) == 1
-        name = ports[0].name
-        reader, writer = await serial_asyncio.open_serial_connection(url=name)
-        while True:
-            data = await reader.readuntil(b"\n")
-            print(data)
-    except Exception as e:
-        print("serial closed")
-        print(e)
-        await asyncio.sleep(1)
-        await serial_read()
+async def handle(websocket: WebSocketServerProtocol):
+    await AsyncSerial.trigger_bootsel()
 
+    while not pico_dir.is_dir():
+        await asyncio.sleep(0.1)
 
-async def websocket_read():
-    try:
-        async with websockets.client.connect("ws://localhost:8050/stuff") as ws:
-            await ws.send(json.dumps({"type": "subscribe", "topic": "pico_in"}))
+    pico_dir.joinpath("flash.uf2").write_bytes(await websocket.recv())
+
+    async with AsyncSerial() as ser:
+
+        async def reader():
             while True:
-                await ws.send(
-                    json.dumps(
-                        {"type": "publish", "topic": "pico_out", "data": "hello"}
-                    )
-                )
-                await asyncio.sleep(1)
-    except websockets.exceptions.ConnectionClosedOK as err:
-        print(f"Closed: {err.reason}")
+                await websocket.send(await ser.read_until(b"\n"))
 
-    except websockets.exceptions.ConnectionClosedError as err:
-        print(f"Closed: {err.reason}")
+        async def writer():
+            while True:
+                ser.write(await websocket.recv())
 
-    finally:
-        await asyncio.sleep(1)
-        await websocket_read()
+        await asyncio.gather(reader(), writer())
 
 
 async def main():
-    await asyncio.gather(
-        # attempt_flash(),
-        serial_read(),
-        # websocket_read(),
-    )
+    async with Serve(handle, "localhost", 8765):
+        await asyncio.Future()
 
 
 if __name__ == "__main__":
