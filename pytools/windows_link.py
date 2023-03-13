@@ -11,9 +11,12 @@ from websockets.legacy.server import Serve, WebSocketServerProtocol
 from websockets.exceptions import ConnectionClosedOK
 import logging
 import concurrent.futures
+from websockets.exceptions import ConnectionClosedError
+from asyncio.exceptions import IncompleteReadError
 
 pico_dir = Path("D:\\")
 
+done_event = asyncio.Event()
 
 class AsyncSerial:
     def __init__(self, baudrate=None):
@@ -27,7 +30,7 @@ class AsyncSerial:
         self.loop = None
 
     async def __aenter__(self):
-        self.pool = concurrent.futures.ThreadPoolExecutor().__enter__()
+        self.pool = concurrent.futures.ThreadPoolExecutor(max_workers=10).__enter__()
         self.loop = asyncio.get_running_loop()
         for _ in range(10):
             try:
@@ -45,10 +48,19 @@ class AsyncSerial:
             self.con.close()
 
     async def read_until(self, pattern):
-        return await self.loop.run_in_executor(self.pool, self.con.read_until, pattern)
+        coro = self.loop.run_in_executor(self.pool, self.con.read_until, pattern)
+        try:
+            return await asyncio.wait_for(coro, timeout=2)
+        except asyncio.TimeoutError:
+            return b""
 
-    def write(self, data: bytes):
-        self.con.write(data)
+
+    async def write(self, data: bytes):
+        coro = self.loop.run_in_executor(self.pool, self.con.write, data)
+        try:
+            await asyncio.wait_for(coro, timeout=2)
+        except asyncio.TimeoutError:
+            raise serial.SerialTimeoutException("Write timeout")
 
     @staticmethod
     async def trigger_bootsel():
@@ -77,14 +89,27 @@ async def handle(websocket: WebSocketServerProtocol):
 
         async def writer():
             while True:
-                ser.write(await websocket.recv())
+                await ser.write(await websocket.recv())
 
-        await asyncio.gather(reader(), writer())
-
+        async def keep_alive():
+            while True:
+                await asyncio.sleep(1)
+                await websocket.keepalive_ping()
+        try:
+            async with asyncio.TaskGroup() as tg:
+                tg.create_task(reader(), name="1")
+                # tg.create_task(writer(), name="2")
+                tg.create_task(keep_alive(), name="3")
+        except ExceptionGroup as _:
+            await websocket.close()
+        done_event.set()
 
 async def main():
-    async with Serve(handle, "localhost", 8765):
-        await asyncio.Future()
+    while True:
+        async with Serve(handle, "localhost", 8765,ping_interval=None):
+            await asyncio.Future()
+            # done_event.clear()
+
 
 
 if __name__ == "__main__":

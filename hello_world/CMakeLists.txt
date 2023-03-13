@@ -13,9 +13,10 @@ add_executable(my_program src/main.c)
 # pico_generate_pio_header(ins_link ${CMAKE_CURRENT_LIST_DIR}/pio/trigger.pio)
 # pico_generate_pio_header(ins_link ${CMAKE_CURRENT_LIST_DIR}/pio/selecter.pio)
 
-# set PICO_STDIO_USB_RESET_MAGIC_BAUD_RATE 1800
 add_compile_definitions(PICO_STDIO_USB_RESET_MAGIC_BAUD_RATE=1200)
-add_compile_definitions(PICO_STDIO_USB_SUPPORT_CHARS_AVAILABLE_CALLBACK=1)
+add_compile_definitions(PICO_STDIO_ENABLE_CRLF_SUPPORT=false)
+add_compile_definitions(PICO_STDIO_USB_SUPPORT_CHARS_AVAILABLE_CALLBACK=0)
+add_compile_definitions(PICO_STDIO_UART_SUPPORT_CHARS_AVAILABLE_CALLBACK=1)
 
 target_link_libraries(my_program
         pico_stdlib

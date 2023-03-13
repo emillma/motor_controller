@@ -33,8 +33,9 @@ async def make():
 
 
 async def main():
+    task = asyncio.create_task(make())
     async with Connect("ws://host.docker.internal:8765") as websocket:
-        await make()
+        await task
         await websocket.send(program_path.read_bytes())
 
         async def reader():
@@ -44,7 +45,7 @@ async def main():
         async def writer():
             while True:
                 await asyncio.sleep(1)
-                await websocket.send("Hello world!")
+                await websocket.send(b"Hello world!")
 
         await asyncio.gather(reader(), writer())
 
