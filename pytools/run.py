@@ -1,8 +1,10 @@
+import itertools
 from pathlib import Path
 import asyncio
 import shlex
 import time
 from websockets.legacy.client import Connect, WebSocketClientProtocol
+import sys
 
 build_dir = Path(__file__).parents[1] / "build"
 program_path = build_dir / "my_program.uf2"
@@ -25,10 +27,12 @@ async def make():
         cwd=build_dir,
     )
     await proc.wait()
-    assert proc.returncode == 0
-    assert program_path.is_file()
-    assert program_path.stat().st_size > 0
-
+    try:
+        assert proc.returncode == 0
+        assert program_path.is_file()
+        assert program_path.stat().st_size > 0
+    except:
+        return None
     return program_path.read_bytes()
 
 
@@ -37,17 +41,20 @@ async def main():
     async with Connect(
         "ws://host.docker.internal:8765", ping_timeout=None
     ) as websocket:
-        await task
-        await websocket.send(program_path.read_bytes())
+        if not (data := await task):
+            return
+
+        await websocket.send(data)
 
         async def reader():
             async for message in websocket:
                 print(message)
 
         async def writer():
-            while True:
-                await asyncio.sleep(4)
-                # await websocket.send(b"H")
+            for i in itertools.count():
+                await asyncio.sleep(0.5)
+
+                await websocket.send(b"hello" + chr(ord("a") + i % 26).encode())
 
         await asyncio.gather(reader(), writer())
 

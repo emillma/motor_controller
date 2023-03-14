@@ -19,6 +19,7 @@ pico_dir = Path("D:\\")
 done_event = asyncio.Event()
 
 class AsyncSerial:
+    pool = concurrent.futures.ThreadPoolExecutor(max_workers=10)
     def __init__(self, baudrate=None):
         kwargs = {"do_not_open": True}
 
@@ -30,7 +31,6 @@ class AsyncSerial:
         self.loop = None
 
     async def __aenter__(self):
-        self.pool = concurrent.futures.ThreadPoolExecutor(max_workers=10).__enter__()
         self.loop = asyncio.get_running_loop()
         for _ in range(10):
             try:
@@ -43,9 +43,7 @@ class AsyncSerial:
         return self
 
     async def __aexit__(self, *exc):
-        self.pool.__exit__(*exc)
-        if self.con.is_open:
-            self.con.close()
+        self.con.close()
 
     async def read_until(self, pattern):
         coro = self.loop.run_in_executor(self.pool, self.con.read_until, pattern)
@@ -73,11 +71,18 @@ class AsyncSerial:
             con.close()
 
 
+lock = asyncio.Lock()
 async def handle(websocket: WebSocketServerProtocol):
     await AsyncSerial.trigger_bootsel()
+    # await AsyncSerial.trigger_bootsel()
 
-    while not pico_dir.is_dir():
+    for i in range(20):
+        if pico_dir.is_dir():
+            break
         await asyncio.sleep(0.1)
+    else:
+        done_event.set()
+        return
 
     pico_dir.joinpath("flash.uf2").write_bytes(await websocket.recv())
 
@@ -91,24 +96,20 @@ async def handle(websocket: WebSocketServerProtocol):
             while True:
                 await ser.write(await websocket.recv())
 
-        async def keep_alive():
-            while True:
-                await asyncio.sleep(1)
-                await websocket.keepalive_ping()
+
         try:
             async with asyncio.TaskGroup() as tg:
                 tg.create_task(reader(), name="1")
                 tg.create_task(writer(), name="2")
-                tg.create_task(keep_alive(), name="3")
         except ExceptionGroup as _:
-            await websocket.close()
-        done_event.set()
+            pass
+    done_event.set()
 
 async def main():
     while True:
-        async with Serve(handle, "localhost", 8765):
+        async with Serve(handle, "localhost", 8765, ping_timeout=None):
             await asyncio.Future()
-            # done_event.clear()
+            done_event.clear()
 
 
 

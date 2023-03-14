@@ -10,6 +10,13 @@
 
 #include "external.h"
 
+struct MyStructure
+{
+    bool waiting;
+    int last_int;
+    char last_char;
+};
+
 bool repeating_timer_callback(struct repeating_timer *t)
 {
     // current time
@@ -31,10 +38,27 @@ void blink_for(uint32_t ms)
     add_alarm_in_ms(ms, turn_off, NULL, false);
 }
 
-void process_data(void *param)
+int64_t do_stuff(alarm_id_t id, void *data_ptr)
+
 {
-    blink_for(50);
-    printf("Data available!\n");
+    struct MyStructure *data = (struct MyStructure *)data_ptr;
+    for (int c = getchar_timeout_us(0); c != PICO_ERROR_TIMEOUT; c = getchar_timeout_us(0))
+    {
+        printf("%c", (char)c);
+    }
+    printf("\n");
+    data->waiting = true;
+    return 0;
+}
+
+void handle_usb_input(void *data_ptr)
+{
+    struct MyStructure *data = (struct MyStructure *)data_ptr;
+    if (data->waiting)
+    {
+        data->waiting = false;
+        add_alarm_in_ms(1, do_stuff, data, true);
+    }
 }
 
 void blink_fast()
@@ -47,38 +71,26 @@ void blink_fast()
     }
 }
 
-void usbctrl_irq_handler()
-{
-    printf("USB IRQ\n");
-}
-
 int main()
 {
     stdio_init_all();
-    stdio_set_chars_available_callback(process_data, NULL);
     gpio_init(25);
     gpio_set_dir(25, GPIO_OUT);
     blink_fast();
 
-    printf("Hello, world!\n");
     struct repeating_timer timer;
+    // add_repeating_timer_ms(-500, repeating_timer_callback, NULL, &timer);
 
-    add_repeating_timer_ms(-500, repeating_timer_callback, NULL, &timer);
-    getchar_timeout_us(100);
+    struct MyStructure my_structure;
+    my_structure.waiting = true;
+    stdio_set_chars_available_callback(handle_usb_input, (void *)&my_structure);
+    // getchar_timeout_us(100);
 
     // irq_add_shared_handler(USBCTRL_IRQ, usbctrl_irq_handler, 0);
     // irq_set_enabled(USBCTRL_IRQ, true);
 
-    char hello;
     while (true)
     {
-        sleep_ms(10);
-
-        scanf("%c", &hello);
-        // if (hello == 'R')
-        // {
-        //     printf("Resetting...\n");
-        //     reset_usb_boot(0, 0);
-        // }
+        sleep_ms(2000);
     }
 }
