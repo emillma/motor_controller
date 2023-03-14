@@ -98,7 +98,7 @@ async def handle(websocket: WebSocketServerProtocol):
         try:
             async with asyncio.TaskGroup() as tg:
                 tg.create_task(reader(), name="1")
-                # tg.create_task(writer(), name="2")
+                tg.create_task(writer(), name="2")
                 tg.create_task(keep_alive(), name="3")
         except ExceptionGroup as _:
             await websocket.close()
@@ -106,7 +106,7 @@ async def handle(websocket: WebSocketServerProtocol):
 
 async def main():
     while True:
-        async with Serve(handle, "localhost", 8765,ping_interval=None):
+        async with Serve(handle, "localhost", 8765):
             await asyncio.Future()
             # done_event.clear()
 
