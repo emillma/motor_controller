@@ -13,17 +13,33 @@
             "justMyCode": true
         },
         {
-            "name": "Python: Run pico",
+            "name": "Python: Pico",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/run/run.py",
-            "args": [
-                "--program=/workspaces/motor_controller/build/blinker.elf",
-            ],
-            "preLaunchTask": "make",
+            "program": "${workspaceFolder}/pytools/run.py",
             "console": "integratedTerminal",
             "justMyCode": true
         },
+        {
+            "name": "Python: Pico Server",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/pytools/windows_link.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        // {
+        //     "name": "Python: Run pico",
+        //     "type": "python",
+        //     "request": "launch",
+        //     "program": "${workspaceFolder}/run/run.py",
+        //     "args": [
+        //         "--program=/workspaces/motor_controller/build/blinker.elf",
+        //     ],
+        //     "preLaunchTask": "make",
+        //     "console": "integratedTerminal",
+        //     "justMyCode": true
+        // },
         {
             "name": "Pico Debug",
             "cwd": "${workspaceRoot}",

@@ -18,8 +18,10 @@ pico_dir = Path("D:\\")
 
 done_event = asyncio.Event()
 
+
 class AsyncSerial:
     pool = concurrent.futures.ThreadPoolExecutor(max_workers=10)
+
     def __init__(self, baudrate=None):
         kwargs = {"do_not_open": True}
 
@@ -52,7 +54,6 @@ class AsyncSerial:
         except asyncio.TimeoutError:
             return b""
 
-
     async def write(self, data: bytes):
         coro = self.loop.run_in_executor(self.pool, self.con.write, data)
         try:
@@ -72,6 +73,8 @@ class AsyncSerial:
 
 
 lock = asyncio.Lock()
+
+
 async def handle(websocket: WebSocketServerProtocol):
     await AsyncSerial.trigger_bootsel()
     # await AsyncSerial.trigger_bootsel()
@@ -83,19 +86,21 @@ async def handle(websocket: WebSocketServerProtocol):
     else:
         done_event.set()
         return
+    data = await websocket.recv()
+    print(f"Received program of lengtht {len(data)}")
+    with open(pico_dir.joinpath("flash.uf2"), "wb") as f:
+        f.write(data)
 
-    pico_dir.joinpath("flash.uf2").write_bytes(await websocket.recv())
-
-    async with AsyncSerial() as ser:
-
+    async with AsyncSerial(921600) as ser:
         async def reader():
             while True:
-                await websocket.send(await ser.read_until(b"\n"))
+                data = await ser.read_until(b"\n")
+                await websocket.send(data)
 
         async def writer():
             while True:
-                await ser.write(await websocket.recv())
-
+                data = await websocket.recv()
+                await ser.write(data)
 
         try:
             async with asyncio.TaskGroup() as tg:
@@ -105,12 +110,12 @@ async def handle(websocket: WebSocketServerProtocol):
             pass
     done_event.set()
 
+
 async def main():
     while True:
         async with Serve(handle, "localhost", 8765, ping_timeout=None):
             await asyncio.Future()
             done_event.clear()
-
 
 
 if __name__ == "__main__":

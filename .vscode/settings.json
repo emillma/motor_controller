@@ -1,5 +1,5 @@
 {
-    "cmake.sourceDirectory": "${workspaceFolder}/src",
+    "cmake.sourceDirectory": "/workspaces/emillma-sensorrig/submodules/pico/hello_world",
     "cmake.statusbar.advanced": {
         "debug": {
             "visibility": "hidden"
