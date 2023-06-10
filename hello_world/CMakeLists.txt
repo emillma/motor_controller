@@ -15,29 +15,33 @@ add_executable(my_program src/main.cpp)
 
 add_compile_definitions(PICO_STDIO_USB_RESET_MAGIC_BAUD_RATE=1200)
 # add_compile_definitions(PICO_STDIO_USB_RESET_MAGIC_BAUD_RATE=2400)
-add_compile_definitions(PICO_STDIO_ENABLE_CRLF_SUPPORT=false)
+# add_compile_definitions(PICO_STDIO_ENABLE_CRLF_SUPPORT=false)
 
 
 # add_compile_definitions(PICO_STDIO_USB_SUPPORT_CHARS_AVAILABLE_CALLBACK=1)
 # add_compile_definitions(PICO_STDIO_UART_SUPPORT_CHARS_AVAILABLE_CALLBACK=1)
-
-target_link_libraries(my_program
-        pico_stdlib
-        pico_stdio_usb
-        pico_stdio_uart
-        pico_stdio
-        pico_bootrom
-        hardware_irq
-        # pico_bootsel_via_double_reset
-        # hardware_watchdog
-        # hardware_spi
-        # hardware_pio
-        # pico_multicore
-        )
-
 pico_enable_stdio_usb(my_program 1)
 pico_enable_stdio_uart(my_program 0)
 pico_add_extra_outputs(my_program)
+
+target_link_libraries(my_program pico_stdlib hardware_pwm
+        pico_unique_id hardware_watchdog hardware_adc hardware_i2c
+        hardware_pio hardware_clocks hardware_spi pico_multicore
+        hardware_dma hardware_irq )
+# target_link_libraries(my_program
+#         pico_stdlib
+#         pico_stdio_usb
+#         pico_stdio_uart
+#         pico_stdio
+#         pico_bootrom
+#         hardware_irq
+#         # pico_bootsel_via_double_reset
+#         # hardware_watchdog
+#         # hardware_spi
+#         # hardware_pio
+#         # pico_multicore
+#         )
+
 
 
  

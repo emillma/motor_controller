@@ -48,12 +48,12 @@ async def main():
 
         async def reader():
             async for message in websocket:
-                print(message)
+                print(len(message))
 
         async def writer():
             for i in itertools.count():
                 await asyncio.sleep(0.5)
-                await websocket.send(b"hello" + chr(ord("a") + i % 26).encode())
+                # await websocket.send(b"hello" + chr(ord("a") + i % 26).encode())
 
         await asyncio.gather(reader(), writer())
 

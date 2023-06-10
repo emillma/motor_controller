@@ -1,18 +1,9 @@
-from dataclasses import dataclass, field
-import itertools
 from pathlib import Path
 import asyncio
-import websockets
 from shutil import copy
-from serial.tools import list_ports
 import serial
-import serial_asyncio
 from websockets.legacy.server import Serve, WebSocketServerProtocol
-from websockets.exceptions import ConnectionClosedOK
-import logging
 import concurrent.futures
-from websockets.exceptions import ConnectionClosedError
-from asyncio.exceptions import IncompleteReadError
 
 pico_dir = Path("D:\\")
 
@@ -50,10 +41,16 @@ class AsyncSerial:
     async def read_until(self, pattern):
         coro = self.loop.run_in_executor(self.pool, self.con.read_until, pattern)
         try:
-            return await asyncio.wait_for(coro, timeout=2)
+            return await asyncio.wait_for(coro, timeout=2)    
         except asyncio.TimeoutError:
+            coro.cancel()
             return b""
+        
+    async def read(self, n):
+        coro = self.loop.run_in_executor(self.pool, self.con.read, n)
+        return await coro
 
+        
     async def write(self, data: bytes):
         coro = self.loop.run_in_executor(self.pool, self.con.write, data)
         try:
@@ -94,7 +91,7 @@ async def handle(websocket: WebSocketServerProtocol):
     async with AsyncSerial(921600) as ser:
         async def reader():
             while True:
-                data = await ser.read_until(b"\n")
+                data = await ser.read(20000)
                 await websocket.send(data)
 
         async def writer():

@@ -17,7 +17,7 @@ void blink_for(uint32_t ms)
 void blink_fast()
 {
     uint32_t time = to_ms_since_boot(get_absolute_time());
-    while (to_ms_since_boot(get_absolute_time()) < time + 2000)
+    while (to_ms_since_boot(get_absolute_time()) < time + 1000)
     {
         blink_for(50);
         sleep_ms(100);
