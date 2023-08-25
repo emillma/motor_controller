@@ -5,9 +5,3 @@
 	url = https://github.com/raspberrypi/pico-sdk.git
  
  
-[submodule ".devcontainer"]
-	path = .devcontainer
-	url = https://github.com/emillma/devcontainer
-[submodule "pico-usbtest"]
-	path = pico-usbtest
-	url = https://github.com/notro/pico-usbtest.git
