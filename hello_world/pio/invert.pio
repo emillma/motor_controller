@@ -1,0 +1,6 @@
+
+.program invert
+.wrap_target
+    mov pins, ! pins
+.wrap  
+

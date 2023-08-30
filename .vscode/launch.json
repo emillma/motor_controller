@@ -20,54 +20,5 @@
             "console": "integratedTerminal",
             "justMyCode": true
         },
-        {
-            "name": "Python: Pico Server",
-            "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/pytools/windows_link.py",
-            "console": "integratedTerminal",
-            "justMyCode": true
-        },
-        // {
-        //     "name": "Python: Run pico",
-        //     "type": "python",
-        //     "request": "launch",
-        //     "program": "${workspaceFolder}/run/run.py",
-        //     "args": [
-        //         "--program=/workspaces/motor_controller/build/blinker.elf",
-        //     ],
-        //     "preLaunchTask": "make",
-        //     "console": "integratedTerminal",
-        //     "justMyCode": true
-        // },
-        {
-            "name": "Pico Debug",
-            "cwd": "${workspaceRoot}",
-            "executable": "${command:cmake.launchTargetPath}",
-            "request": "attach",
-            "type": "cortex-debug",
-            "servertype": "openocd",
-            // This may need to be arm-none-eabi-gdb depending on your system
-            "gdbPath": "gdb-multiarch",
-            "device": "RP2040",
-            // "gdbTarget": "/dev/ttyACM0",
-            "configFiles": [
-                "interface/picoprobe.cfg",
-                "target/rp2040.cfg"
-            ],
-            "svdFile": "${workspaceFolder}/src/pico-sdk/src/rp2040/hardware_regs/rp2040.svd",
-            // "runToMain": true,
-            // "armToolchainPath": "/usr/bin/arm-none-eabi-gcc",
-            // "runToEntryPoint": "main",
-            // Work around for stopping at main on restart
-            "postRestartCommands": [
-                "break main",
-                "continue"
-            ],
-            "searchDir": [
-                "~/openocd/tcl"
-            ],
-            "showDevDebugOutput": "raw",
-        }
     ]
 }
