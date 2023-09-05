@@ -4,115 +4,92 @@ from shutil import copy
 import serial
 from websockets.legacy.server import Serve, WebSocketServerProtocol
 import concurrent.futures
-
-pico_dir = Path("D:\\")
-
-done_event = asyncio.Event()
+import serial.tools.list_ports
 
 
 class AsyncSerial:
-    pool = concurrent.futures.ThreadPoolExecutor(max_workers=10)
+    @staticmethod
+    def url():
+        try:
+            return serial.tools.list_ports.comports()[0].device
+        except IndexError:
+            return None
 
-    def __init__(self, baudrate=None):
-        kwargs = {"do_not_open": True}
-
-        if baudrate is not None:
-            kwargs["baudrate"] = baudrate
-
-        self.con = serial.serial_for_url(url="COM3", **kwargs)
-        self.pool = None
+    def __init__(self, baudrate, timeout):
+        kwargs = {
+            "do_not_open": True,
+            "timeout": timeout,
+            "baudrate": baudrate,
+        }
+        # list serials ports
+        self.con = serial.serial_for_url(url=self.url(), **kwargs)
         self.loop = None
 
     async def __aenter__(self):
+        print("Opening serial port")
+        self.con.open()
         self.loop = asyncio.get_running_loop()
-        for _ in range(10):
-            try:
-                self.con.open()
-                break
-            except serial.SerialException:
-                await asyncio.sleep(0.2)
-        else:
-            raise serial.SerialException("Could not open serial port")
         return self
 
     async def __aexit__(self, *exc):
+        print("Closing serial port")
         self.con.close()
 
     async def read_until(self, pattern):
-        coro = self.loop.run_in_executor(self.pool, self.con.read_until, pattern)
-        try:
-            return await asyncio.wait_for(coro, timeout=2)    
-        except asyncio.TimeoutError:
-            coro.cancel()
-            return b""
-        
-    async def read(self, n):
-        coro = self.loop.run_in_executor(self.pool, self.con.read, n)
+        coro = self.loop.run_in_executor(None, self.con.read_until, pattern, 4096)
         return await coro
 
-        
+    async def read(self, n):
+        coro = self.loop.run_in_executor(None, self.con.read, n)
+        return await coro
+
     async def write(self, data: bytes):
-        coro = self.loop.run_in_executor(self.pool, self.con.write, data)
-        try:
-            await asyncio.wait_for(coro, timeout=2)
-        except asyncio.TimeoutError:
-            raise serial.SerialTimeoutException("Write timeout")
+        coro = self.loop.run_in_executor(None, self.con.write, data)
+        await asyncio.wait_for(coro, timeout=2)
 
     @staticmethod
-    async def trigger_bootsel():
-        con = serial.serial_for_url(url="COM3", baudrate=1200, do_not_open=True)
+    async def load_script(script: bytes):
         try:
-            con.open()
-        except serial.SerialException:
+            async with AsyncSerial(1200, 0.01):
+                pass
+        except serial.SerialException as e:
             pass
-        finally:
-            con.close()
-
-
-lock = asyncio.Lock()
+        path = Path("D:\\").joinpath("flash.uf2")
+        for _ in range(100):
+            if path.parent.is_dir():
+                break
+            await asyncio.sleep(0.05)
+        else:
+            raise Exception("Bootsel not working")
+        with open(path, "wb") as f:
+            f.write(script)
+        await asyncio.sleep(1)
 
 
 async def handle(websocket: WebSocketServerProtocol):
-    await AsyncSerial.trigger_bootsel()
-    # await AsyncSerial.trigger_bootsel()
-
-    for i in range(20):
-        if pico_dir.is_dir():
-            break
-        await asyncio.sleep(0.1)
-    else:
-        done_event.set()
-        return
     data = await websocket.recv()
-    print(f"Received program of lengtht {len(data)}")
-    with open(pico_dir.joinpath("flash.uf2"), "wb") as f:
-        f.write(data)
+    await AsyncSerial.load_script(data)
+    async with AsyncSerial(921600, 0.01) as ser:
 
-    async with AsyncSerial(921600) as ser:
         async def reader():
             while True:
-                data = await ser.read(20000)
-                await websocket.send(data)
+                if data := await ser.read(4096):
+                    await websocket.send(data)
 
         async def writer():
             while True:
-                data = await websocket.recv()
-                await ser.write(data)
+                if data := await websocket.recv():
+                    await ser.write(data)
 
-        try:
-            async with asyncio.TaskGroup() as tg:
-                tg.create_task(reader(), name="1")
-                tg.create_task(writer(), name="2")
-        except ExceptionGroup as _:
-            pass
-    done_event.set()
+        async with asyncio.TaskGroup() as tg:
+            tg.create_task(reader(), name="1")
+            tg.create_task(writer(), name="2")
 
 
 async def main():
     while True:
         async with Serve(handle, "localhost", 8765, ping_timeout=None):
             await asyncio.Future()
-            done_event.clear()
 
 
 if __name__ == "__main__":

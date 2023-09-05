@@ -1,7 +1,0 @@
-
-
-[submodule "src/pico-sdk"]
-	path = src/pico-sdk
-	url = https://github.com/raspberrypi/pico-sdk.git
- 
- 

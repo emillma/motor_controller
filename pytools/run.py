@@ -1,61 +1,54 @@
 import itertools
-from pathlib import Path
+from websockets.legacy.client import WebSocketClientProtocol
+from wsl_link import connect_over_ws
 import asyncio
-import shlex
-import time
-from websockets.legacy.client import Connect, WebSocketClientProtocol
-import sys
-
-build_dir = Path(__file__).parents[1] / "build"
-program_path = build_dir / "my_program.uf2"
+import aioconsole
+from io import BytesIO
+import re
+from pprint import pprint
 
 
-async def hello():
-    async with Connect("ws://host.docker.internal:8765") as websocket:
-        await websocket.send("Hello world!")
-        print(await websocket.recv())
+async def reader(sock: WebSocketClientProtocol):
+    # binary io buffer
+    buffer = bytearray()
+    # imu_z_pattern = rb'\xa7'
+    async for message in sock:
+        for line in message.split(b"\r"):
+            if line:
+                try:
+                    line = line.decode()
+                except UnicodeDecodeError:
+                    pass
+                print(line)
+
+        # print(message)
+        # pprint(message)
+        # print(message)
+
+        # print(len(message))
+        # buffer.extend(message)
+        # # print(bytes(buffer))
+
+        # before, sep, after = buffer.partition(b"\xa7")
+        # if sep:
+        #     print(len(before))
+        #     buffer = after
 
 
-async def bootsel():
-    await asyncio.sleep(2)
+async def writer(sock: WebSocketClientProtocol):
+    await asyncio.sleep(5)
+
+    # await sock.send(b"UTILITYMODE\0x0D")
+    # await sock.send(b"IMUZ\r")
+    for i in itertools.count():
+        # awai
+        line = await aioconsole.ainput()
+
+        # await sock.send(b"SERVICEMODE\r")
+        # await sock.send(b"UTILITYMODE\r")
+        await sock.send(str(line).encode() + b"\r")
+        await asyncio.sleep(1)
 
 
-async def make():
-    cmd = "make -j8"
-    proc = await asyncio.create_subprocess_exec(
-        *shlex.split(cmd),
-        cwd=build_dir,
-    )
-    await proc.wait()
-    try:
-        assert proc.returncode == 0
-        assert program_path.is_file()
-        assert program_path.stat().st_size > 0
-    except:
-        return None
-    return program_path.read_bytes()
-
-
-async def main():
-    task = asyncio.create_task(make())
-    async with Connect(
-        "ws://host.docker.internal:8765", ping_timeout=None
-    ) as websocket:
-        if not (data := await task):
-            return
-
-        await websocket.send(data)
-
-        async def reader():
-            async for message in websocket:
-                print(len(message))
-
-        async def writer():
-            for i in itertools.count():
-                await asyncio.sleep(0.5)
-                # await websocket.send(b"hello" + chr(ord("a") + i % 26).encode())
-
-        await asyncio.gather(reader(), writer())
-
-
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(connect_over_ws(reader, writer))

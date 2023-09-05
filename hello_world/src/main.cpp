@@ -4,10 +4,11 @@
 #include "pico/stdio.h"
 
 #include "leds.hpp"
-#include "setup_pio.hpp"
-#include "setup_pwm.hpp"
-#include "setup_usb.hpp"
-#include "setup_uart.hpp"
+#include "pio_setup.hpp"
+#include "pwm_setup.hpp"
+#include "stim_setup.hpp"
+#include "usb_setup.hpp"
+
 int main()
 {
     stdio_init_all();
@@ -16,14 +17,15 @@ int main()
     gpio_set_dir(25, GPIO_OUT);
     blink_fast();
 
-    init_usb();
-    init_uart();
-    init_pwm();
+    usb_init();
+    stim_init();
+    pwm_init();
     init_pio_inverter();
 
     while (true)
     {
-        handle_usb_in();
-        sleep_ms(1000);
+        stim_handle_input();
+        usb_handle_input();
+        // sleep_ms(1);
     }
 }
