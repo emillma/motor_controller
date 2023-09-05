@@ -1,19 +1,16 @@
 #pragma once
 #include "hardware/uart.h"
 
-#define stim_uart_id uart0
+#define stim_uart_id uart1
 
 void stim_init()
 {
-    int baud_rate = 921600;
-    uart_init(uart0, baud_rate);
-    // set pin 0 and 1 to uart
+    int baud_rate = 1843200;
+    // int baud_rate = 921600;
+    uart_init(stim_uart_id, baud_rate);
 
-    // gpio_set_pulls(0, false, false);
-
-    gpio_set_function(0, GPIO_FUNC_UART);
-    // gpio_set_input_hysteresis_enabled(0, false);
-    gpio_set_function(1, GPIO_FUNC_UART);
+    gpio_set_function(8, GPIO_FUNC_UART);
+    gpio_set_function(9, GPIO_FUNC_UART);
 }
 
 void stim_handle_input()

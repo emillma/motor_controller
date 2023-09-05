@@ -2,8 +2,8 @@
 #include "invert.pio.h"
 
 #define pio pio0
-#define pin_in 0
-#define pin_out 4
+#define pin_in 8
+#define pin_out 7
 
 static inline void init_pio_inverter()
 {

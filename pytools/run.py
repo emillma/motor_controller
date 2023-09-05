@@ -6,20 +6,26 @@ import aioconsole
 from io import BytesIO
 import re
 from pprint import pprint
+import numpy as np
+
+pat = b"\xa7" + b"(.{9})." * 4
+pat = b"\xa7(.{9}).(.{9}).(.{9}).(.{9})."
 
 
 async def reader(sock: WebSocketClientProtocol):
-    # binary io buffer
     buffer = bytearray()
-    # imu_z_pattern = rb'\xa7'
     async for message in sock:
-        for line in message.split(b"\r"):
-            if line:
-                try:
-                    line = line.decode()
-                except UnicodeDecodeError:
-                    pass
-                print(line)
+        buffer.extend(message)
+        bc = np.bincount(buffer)
+        bc_args = np.argsort(bc)[-10:]
+        print(" ".join(f"{a:x}:{bc[a]}" for a in bc_args))
+        buffer = buffer[-10000:]
+        # buffer.extend(message)
+
+        # print(message.replace(b''))
+        # for meas in buffer.split(b"\xa7"):
+        # print(np.bincount(meas))
+        # buffer = meas
 
         # print(message)
         # pprint(message)
@@ -36,18 +42,11 @@ async def reader(sock: WebSocketClientProtocol):
 
 
 async def writer(sock: WebSocketClientProtocol):
-    await asyncio.sleep(5)
-
-    # await sock.send(b"UTILITYMODE\0x0D")
-    # await sock.send(b"IMUZ\r")
+    await asyncio.sleep(2)
+    # await sock.send(b"SERVICEMODE\r")
     for i in itertools.count():
-        # awai
-        line = await aioconsole.ainput()
-
-        # await sock.send(b"SERVICEMODE\r")
-        # await sock.send(b"UTILITYMODE\r")
-        await sock.send(str(line).encode() + b"\r")
-        await asyncio.sleep(1)
+        line: str = await aioconsole.ainput()
+        await sock.send(line.encode() + b"\r")
 
 
 if __name__ == "__main__":
