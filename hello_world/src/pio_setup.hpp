@@ -5,7 +5,7 @@
 #define pin_in 8
 #define pin_out 7
 
-static inline void init_pio_inverter()
+static inline void pio_inverter_init()
 {
     int sm = pio_claim_unused_sm(pio, true);
     pio_sm_set_consecutive_pindirs(pio, sm, pin_out, 1, true);

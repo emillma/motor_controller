@@ -24,12 +24,10 @@ async def make():
         cwd=build_dir,
     )
     await proc.wait()
-    try:
-        assert proc.returncode == 0
-        assert program_path.is_file()
-        assert program_path.stat().st_size > 0
-    except:
-        return None
+    assert proc.returncode == 0
+    assert program_path.is_file()
+    assert program_path.stat().st_size > 0
+
     return program_path.read_bytes()
 
 

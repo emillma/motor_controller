@@ -69,7 +69,7 @@ class AsyncSerial:
 async def handle(websocket: WebSocketServerProtocol):
     data = await websocket.recv()
     await AsyncSerial.load_script(data)
-    async with AsyncSerial(921600, 0.01) as ser:
+    async with AsyncSerial(9600, 0.01) as ser:
 
         async def reader():
             while True:

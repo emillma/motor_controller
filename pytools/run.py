@@ -8,37 +8,22 @@ import re
 from pprint import pprint
 import numpy as np
 
-pat = b"\xa7" + b"(.{9})." * 4
-pat = b"\xa7(.{9}).(.{9}).(.{9}).(.{9})."
-
 
 async def reader(sock: WebSocketClientProtocol):
+    received = dict()
     buffer = bytearray()
     async for message in sock:
         buffer.extend(message)
-        bc = np.bincount(buffer)
-        bc_args = np.argsort(bc)[-10:]
-        print(" ".join(f"{a:x}:{bc[a]}" for a in bc_args))
-        buffer = buffer[-10000:]
-        # buffer.extend(message)
+        pat = re.compile(b"\xff([\x00-\xfd])(.*?)(?=\xff[\x00-\xfd])", flags=re.DOTALL)
 
-        # print(message.replace(b''))
-        # for meas in buffer.split(b"\xa7"):
-        # print(np.bincount(meas))
-        # buffer = meas
-
-        # print(message)
-        # pprint(message)
-        # print(message)
-
-        # print(len(message))
-        # buffer.extend(message)
-        # # print(bytes(buffer))
-
-        # before, sep, after = buffer.partition(b"\xa7")
-        # if sep:
-        #     print(len(before))
-        #     buffer = after
+        while match := pat.search(buffer):
+            d = re.sub(b"\xff\xfe", b"\xff", match.group(2))
+            # data = data.split(b"\xb5\x62\x02\x15")
+            received.setdefault(int.from_bytes(match.group(1)), bytearray()).extend(d)
+            buffer = buffer[match.end() :]
+        sep = b"\xb5\x62\x02\x15"
+        for k, v in received.items():
+            print(f"{k}:", f"{len(v.split(sep))}")
 
 
 async def writer(sock: WebSocketClientProtocol):

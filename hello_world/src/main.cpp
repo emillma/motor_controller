@@ -3,11 +3,12 @@
 #include "pico/stdlib.h"
 #include "pico/stdio.h"
 
+#include "usb_setup.hpp"
 #include "leds.hpp"
 #include "pio_setup.hpp"
 #include "pwm_setup.hpp"
 #include "stim_setup.hpp"
-#include "usb_setup.hpp"
+#include "i2c_setup.hpp"
 
 int main()
 {
@@ -20,12 +21,14 @@ int main()
     usb_init();
     stim_init();
     pwm_init();
-    init_pio_inverter();
+    pio_inverter_init();
+    i2c_init();
 
     while (true)
     {
-        stim_handle_input();
-        usb_handle_input();
-        // sleep_ms(1);
+        // stim_forward();
+        // usb_handle_input();
+        f9p_a_forward();
+        // f9p_b_forward();
     }
 }

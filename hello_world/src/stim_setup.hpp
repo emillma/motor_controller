@@ -13,20 +13,26 @@ void stim_init()
     gpio_set_function(9, GPIO_FUNC_UART);
 }
 
-void stim_handle_input()
+void stim_forward()
 {
-    bool any = false;
+    uint8_t data;
+    if (uart_is_readable(stim_uart_id))
+    {
+        usb_send_id(90);
+    }
     while (uart_is_readable(stim_uart_id))
     {
-        char c = uart_getc(stim_uart_id);
-        fwrite(&c, 1, 1, stdout);
-        any = true;
+        data = uart_getc(stim_uart_id);
+        usb_send_stuffed(&data, 1);
     }
-    if (any)
-        fflush(stdout);
 }
 
-void stim_send_char(char c)
+void stim_from_usb()
 {
-    uart_putc(stim_uart_id, c);
+
+    bool any = false;
+    for (int input = getchar_timeout_us(0); input != PICO_ERROR_TIMEOUT; input = getchar_timeout_us(0))
+    {
+        uart_putc(stim_uart_id, (char)input);
+    }
 }
