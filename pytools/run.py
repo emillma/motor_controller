@@ -1,4 +1,5 @@
 import itertools
+from pathlib import Path
 from websockets.legacy.client import WebSocketClientProtocol
 from wsl_link import connect_over_ws
 import asyncio
@@ -10,20 +11,18 @@ import numpy as np
 
 
 async def reader(sock: WebSocketClientProtocol):
-    received = dict()
+    rec: dict[int, bytearray] = dict()
     buffer = bytearray()
     async for message in sock:
         buffer.extend(message)
         pat = re.compile(b"\xff([\x00-\xfd])(.*?)(?=\xff[\x00-\xfd])", flags=re.DOTALL)
-
         while match := pat.search(buffer):
-            d = re.sub(b"\xff\xfe", b"\xff", match.group(2))
-            # data = data.split(b"\xb5\x62\x02\x15")
-            received.setdefault(int.from_bytes(match.group(1)), bytearray()).extend(d)
+            data = re.sub(b"\xff\xfe", b"\xff", match[2])
+            rec.setdefault(int.from_bytes(match[1]), bytearray()).extend(data)
             buffer = buffer[match.end() :]
         sep = b"\xb5\x62\x02\x15"
-        for k, v in received.items():
-            print(f"{k}:", f"{len(v.split(sep))}")
+        for k, v in rec.items():
+            print(f"{k}:", f"{len(v)}")
 
 
 async def writer(sock: WebSocketClientProtocol):
@@ -35,4 +34,7 @@ async def writer(sock: WebSocketClientProtocol):
 
 
 if __name__ == "__main__":
-    asyncio.run(connect_over_ws(reader, writer))
+    build_dir = Path(__file__).parents[1] / "build"
+    build_dir.mkdir(exist_ok=True)
+    project_dir = Path(__file__).parents[1] / "hello_world"
+    asyncio.run(connect_over_ws(build_dir, project_dir, reader, writer))

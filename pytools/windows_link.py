@@ -7,83 +7,42 @@ import concurrent.futures
 import serial.tools.list_ports
 
 
-class AsyncSerial:
-    @staticmethod
-    def url():
-        try:
-            return serial.tools.list_ports.comports()[0].device
-        except IndexError:
-            return None
-
-    def __init__(self, baudrate, timeout):
-        kwargs = {
-            "do_not_open": True,
-            "timeout": timeout,
-            "baudrate": baudrate,
-        }
-        # list serials ports
-        self.con = serial.serial_for_url(url=self.url(), **kwargs)
-        self.loop = None
-
-    async def __aenter__(self):
-        print("Opening serial port")
-        self.con.open()
-        self.loop = asyncio.get_running_loop()
-        return self
-
-    async def __aexit__(self, *exc):
-        print("Closing serial port")
-        self.con.close()
-
-    async def read_until(self, pattern):
-        coro = self.loop.run_in_executor(None, self.con.read_until, pattern, 4096)
-        return await coro
-
-    async def read(self, n):
-        coro = self.loop.run_in_executor(None, self.con.read, n)
-        return await coro
-
-    async def write(self, data: bytes):
-        coro = self.loop.run_in_executor(None, self.con.write, data)
-        await asyncio.wait_for(coro, timeout=2)
-
-    @staticmethod
-    async def load_script(script: bytes):
-        try:
-            async with AsyncSerial(1200, 0.01):
-                pass
-        except serial.SerialException as e:
-            pass
-        path = Path("D:\\").joinpath("flash.uf2")
-        for _ in range(100):
-            if path.parent.is_dir():
-                break
-            await asyncio.sleep(0.05)
-        else:
-            raise Exception("Bootsel not working")
-        with open(path, "wb") as f:
-            f.write(script)
-        await asyncio.sleep(1)
+def get_url():
+    ports = serial.tools.list_ports.comports()
+    assert len(ports) == 1
+    return ports[0].device
+    
+def load_script(script: bytes):
+    try:
+        Path("D:\\").joinpath("flash.uf2").write_bytes(script)
+        return
+    except Exception:
+        pass
+    ser = serial.serial_for_url(url=get_url(), baudrate=1200)
+    ser.close()
+    Path("D:\\").joinpath("flash.uf2").write_bytes(script)
+    
 
 
 async def handle(websocket: WebSocketServerProtocol):
     data = await websocket.recv()
-    await AsyncSerial.load_script(data)
-    async with AsyncSerial(9600, 0.01) as ser:
+    load_script(data)
+    ser = serial.serial_for_url(url=get_url(), baudrate=9600, timeout=0.01)
+    loop = asyncio.get_running_loop()
 
-        async def reader():
-            while True:
-                if data := await ser.read(4096):
-                    await websocket.send(data)
+    async def reader():
+        while True:
+            if data := await loop.run_in_executor(None, ser.read(4096)):
+                await websocket.send(data)
 
-        async def writer():
-            while True:
-                if data := await websocket.recv():
-                    await ser.write(data)
+    async def writer():
+        while True:
+            if data := await websocket.recv():
+                await loop.run_in_executor(None, ser.write(data))
 
-        async with asyncio.TaskGroup() as tg:
-            tg.create_task(reader(), name="1")
-            tg.create_task(writer(), name="2")
+    async with asyncio.TaskGroup() as tg:
+        tg.create_task(reader(), name="1")
+        tg.create_task(writer(), name="2")
 
 
 async def main():
