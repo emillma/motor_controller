@@ -78,10 +78,11 @@ int main()
     while (true)
     {
         stim_forward();
-        // handle_usb_input();
+        handle_usb_input();
 
         // f9p_a_forward();
         // f9p_b_forward();
         // usb_flush();
+        sleep_ms(1);
     }
 }

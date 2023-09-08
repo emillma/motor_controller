@@ -6,7 +6,7 @@ from websockets.legacy.server import Serve, WebSocketServerProtocol
 import serial.tools.list_ports
 
 def get_url():
-    for _ in range(40):
+    for _ in range(20):
         ports = serial.tools.list_ports.comports()
         if (num := len(ports)) == 1:
             return ports[0].device
@@ -17,7 +17,7 @@ def get_url():
 
 def load_script(script: bytes):
     path = Path("D:\\").joinpath("flash.uf2")
-    for idx in range(100):
+    for idx in range(20):
         
         print(idx)
         
@@ -37,7 +37,7 @@ async def forward(websocket: WebSocketServerProtocol):
     loop = asyncio.get_running_loop()
     for _ in range(20):
         try:
-            ser = serial.serial_for_url(url=get_url(), baudrate=9000, timeout=0.01)
+            ser = serial.serial_for_url(url=get_url(), baudrate=9000, timeout=0.1)
             break
         except Exception:
             time.sleep(0.2)
@@ -46,7 +46,7 @@ async def forward(websocket: WebSocketServerProtocol):
 
     async def reader():
         while websocket.open:
-            if data := await loop.run_in_executor(None, ser.read, 1024):
+            if data := await loop.run_in_executor(None, ser.read, 4096):
                 await websocket.send(data)
 
     async def writer():

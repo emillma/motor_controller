@@ -22,9 +22,9 @@ async def reader(sock: WebSocketClientProtocol):
     pat = re.compile(b"\xff([\x00-\xfd])(.*?)(?=\xff[\x00-\xfd])", flags=re.DOTALL)
 
     async for message in sock:
-        msgs = message.split(b"\xa7")
-        print([len(m) for m in msgs])
-        here = True
+        # msgs = message.split(b"\xa7")
+        # print([len(m) for m in msgs])
+        # here = True
 
         # for v in [_ for _ in message.split(b"\r") if _]:
         #     try:
@@ -32,11 +32,14 @@ async def reader(sock: WebSocketClientProtocol):
         #     except UnicodeDecodeError:
         #         print(v)
         # print(message)
-        # buffer.extend(message)
-        # while match := pat.search(buffer):
-        #     buffer = buffer[match.end() :]
-        #     key = int.from_bytes(match[1])
-        #     val = re.sub(b"\xff\xfe", b"\xff", match[2])
+        buffer.extend(message)
+        while match := pat.search(buffer):
+            buffer = buffer[match.end() :]
+            key = int.from_bytes(match[1])
+            val = re.sub(b"\xff\xfe", b"\xff", match[2])
+            rec.setdefault(key, bytearray()).extend(val)
+
+            # print([len(p) for p in rec[key].split(b"\xa7")])
         #     if key == 1:
         #         print(val)
         #     elif key == 90:
@@ -82,7 +85,7 @@ async def main():
     build_dir.mkdir(exist_ok=True)
     project_dir = Path(__file__).parents[1] / "hello_world"
 
-    await build_and_flash(build_dir, project_dir)
+    # await build_and_flash(build_dir, project_dir)
 
     print("Connecting")
     await connect_over_ws(reader, writer)

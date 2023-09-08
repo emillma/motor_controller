@@ -27,12 +27,6 @@ void usb_flush()
     fflush(stdout);
 }
 
-int64_t usb_flush_alarm_callback(alarm_id_t id, void *user_data)
-{
-    usb_flush();
-    return 10;
-}
-
 void usb_init()
 {
     stdio_usb_init();
