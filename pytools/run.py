@@ -21,9 +21,9 @@ async def reader(sock: WebSocketClientProtocol):
             # data = data.split(b"\xb5\x62\x02\x15")
             received.setdefault(int.from_bytes(match.group(1)), bytearray()).extend(d)
             buffer = buffer[match.end() :]
-        sep = b"\xb5\x62\x02\x15"
+        # sep = b"\xb5\x62\x02\x15"
         for k, v in received.items():
-            print(f"{k}:", f"{len(v.split(sep))}")
+            print(f"{k}:", [len(i) for i in v.split(b"\xa7")])
 
 
 async def writer(sock: WebSocketClientProtocol):

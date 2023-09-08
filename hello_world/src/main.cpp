@@ -26,9 +26,9 @@ int main()
 
     while (true)
     {
-        // stim_forward();
+        stim_forward();
         // usb_handle_input();
-        f9p_a_forward();
+        // f9p_a_forward();
         // f9p_b_forward();
     }
 }

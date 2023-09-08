@@ -5,8 +5,8 @@
 
 void stim_init()
 {
-    int baud_rate = 1843200;
-    // int baud_rate = 921600;
+    // int baud_rate = 1843200;
+    int baud_rate = 921600;
     uart_init(stim_uart_id, baud_rate);
 
     gpio_set_function(8, GPIO_FUNC_UART);
