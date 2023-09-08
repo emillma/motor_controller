@@ -2,16 +2,7 @@ from pathlib import Path
 import asyncio
 import shlex
 from websockets.legacy.client import Connect
-
-
-async def hello():
-    async with Connect("ws://host.docker.internal:8765") as websocket:
-        await websocket.send("Hello world!")
-        print(await websocket.recv())
-
-
-async def bootsel():
-    await asyncio.sleep(2)
+import logging
 
 
 async def cmake(build_dir: Path, project_dir: Path, build_type="Release"):
@@ -28,18 +19,19 @@ async def make(build_dir: Path):
     assert proc.returncode == 0
 
 
-async def get_binary(build_dir: Path, project_dir: Path, build_type="Release"):
+async def build_and_flash(build_dir: Path, project_dir: Path, build_type="Release"):
     await cmake(build_dir, project_dir, build_type)
     await make(build_dir)
     assert len(uf2s := list(build_dir.glob("*.uf2"))) == 1
     assert len(binary := uf2s[0].read_bytes()) > 0
-    return binary
 
-
-async def connect_over_ws(build_dir: Path, project_dir: Path, reader, writer):
-    build_task = asyncio.create_task(get_binary(build_dir, project_dir))
-
-    async with Connect("ws://host.docker.internal:8765", ping_timeout=None) as sock:
-        binary = await build_task
+    url = "ws://host.docker.internal:8765/flash"
+    async with Connect(url, ping_timeout=None) as sock:
         await sock.send(binary)
+        return await sock.recv()
+
+
+async def connect_over_ws(reader, writer):
+    url = "ws://host.docker.internal:8765/forward"
+    async with Connect(url, ping_timeout=None) as sock:
         await asyncio.gather(reader(sock), writer(sock))

@@ -1,48 +1,79 @@
 from pathlib import Path
 import asyncio
-from shutil import copy
+import time
 import serial
 from websockets.legacy.server import Serve, WebSocketServerProtocol
-import concurrent.futures
 import serial.tools.list_ports
 
-
 def get_url():
-    ports = serial.tools.list_ports.comports()
-    assert len(ports) == 1
-    return ports[0].device
+    for _ in range(40):
+        ports = serial.tools.list_ports.comports()
+        if (num := len(ports)) == 1:
+            return ports[0].device
+        time.sleep(0.2)
+    raise Exception(f"Found {num} ports, expected 1")
     
+
+
 def load_script(script: bytes):
-    try:
-        Path("D:\\").joinpath("flash.uf2").write_bytes(script)
-        return
-    except Exception:
-        pass
-    ser = serial.serial_for_url(url=get_url(), baudrate=1200)
-    ser.close()
-    Path("D:\\").joinpath("flash.uf2").write_bytes(script)
-    
+    path = Path("D:\\").joinpath("flash.uf2")
+    for idx in range(100):
+        
+        print(idx)
+        
+        if path.parent.exists():
+            path.write_bytes(script)
+            return
+        try:
+            serial.serial_for_url(url=get_url(), baudrate=1200)
+        except Exception:
+            pass
+        time.sleep(0.2)
+        
+    raise Exception("Could not flash")
 
 
-async def handle(websocket: WebSocketServerProtocol):
-    data = await websocket.recv()
-    load_script(data)
-    ser = serial.serial_for_url(url=get_url(), baudrate=9600, timeout=0.01)
+async def forward(websocket: WebSocketServerProtocol):
     loop = asyncio.get_running_loop()
+    for _ in range(20):
+        try:
+            ser = serial.serial_for_url(url=get_url(), baudrate=9000, timeout=0.01)
+            break
+        except Exception:
+            time.sleep(0.2)
+    else:
+        raise Exception("Could not open serial port")
 
     async def reader():
-        while True:
-            if data := await loop.run_in_executor(None, ser.read(4096)):
+        while websocket.open:
+            if data := await loop.run_in_executor(None, ser.read, 1024):
                 await websocket.send(data)
 
     async def writer():
-        while True:
+        while websocket.open:
             if data := await websocket.recv():
-                await loop.run_in_executor(None, ser.write(data))
+                ser.write(data)
+                
+    async def watchdog():
+        while websocket.open:
+            await asyncio.sleep(0.5)
+            ser.write(b"\xff\x01\xff\xff")
+            
+    await asyncio.gather(reader(), writer(), watchdog())
+    ser.close()
 
-    async with asyncio.TaskGroup() as tg:
-        tg.create_task(reader(), name="1")
-        tg.create_task(writer(), name="2")
+
+async def handle(websocket: WebSocketServerProtocol):
+    if websocket.path == "/flash":
+        data = await websocket.recv()
+        load_script(data)
+        await websocket.send(b"OK")
+
+    elif websocket.path == "/forward":
+        await forward(websocket)
+        
+    else:
+        raise Exception("Unknown path")
 
 
 async def main():

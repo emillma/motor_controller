@@ -15,7 +15,7 @@
 void i2c_init()
 {
 
-    i2c_init(i2c_fp9, 400 * 1000);
+    i2c_init(i2c_fp9, 300 * 1000);
     gpio_set_function(i2c_f9p_sda, GPIO_FUNC_I2C);
     gpio_set_function(i2c_f9p_scl, GPIO_FUNC_I2C);
     gpio_pull_up(i2c_f9p_sda);
@@ -23,31 +23,34 @@ void i2c_init()
     // PICO_DEFAULT_I2C_SDA_PIN;
     bi_decl(bi_2pins_with_func(i2c_f9p_sda, i2c_f9p_scl, GPIO_FUNC_I2C));
 }
-
 void i2c_forward(uint8_t addr, uint8_t id)
 {
     uint8_t rxdata[4096];
     const uint8_t reg = 0xfd;
-    int32_t available;
-    i2c_write_blocking(i2c_fp9, addr, &reg, 1, true);
-    i2c_read_blocking(i2c_fp9, addr, rxdata, 2, false);
+    int written, read, available, chunk_size;
+
+    written = i2c_write_timeout_per_char_us(i2c_fp9, addr, &reg, 1, true, 100);
+    if (written != 1)
+        return;
+    else
+        read = i2c_read_timeout_per_char_us(i2c_fp9, addr, rxdata, 2, false, 100);
+    if (read != 2)
+        return;
+
     available = rxdata[0] << 8 | rxdata[1];
     if (available > 0)
         usb_send_id(id);
     while (available > 0)
     {
-        if (available > 4096)
+        chunk_size = available > 4096 ? 4096 : available;
+        read = i2c_read_timeout_per_char_us(i2c_fp9, addr, rxdata, chunk_size, false, 100);
+        if (read > 0)
         {
-            i2c_read_blocking(i2c_fp9, addr, rxdata, 4096, false);
-            usb_send_stuffed(rxdata, 4096);
-            available -= 4096;
+            usb_send_stuffed(rxdata, read);
+            available -= read;
         }
         else
-        {
-            i2c_read_blocking(i2c_fp9, addr, rxdata, available, false);
-            usb_send_stuffed(rxdata, available);
-            available = 0;
-        }
+            break;
     }
 }
 

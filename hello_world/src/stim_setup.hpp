@@ -5,12 +5,14 @@
 
 void stim_init()
 {
-    int baud_rate = 1843200;
-    // int baud_rate = 921600;
+    // int baud_rate = 1843200;
+    int baud_rate = 921600;
+    // int baud_rate = 460800;
     uart_init(stim_uart_id, baud_rate);
 
     gpio_set_function(8, GPIO_FUNC_UART);
     gpio_set_function(9, GPIO_FUNC_UART);
+    // gpio_set_pulls(9, false, false);
 }
 
 void stim_forward()
@@ -27,12 +29,7 @@ void stim_forward()
     }
 }
 
-void stim_from_usb()
+void stim_write(uint8_t *data, size_t len)
 {
-
-    bool any = false;
-    for (int input = getchar_timeout_us(0); input != PICO_ERROR_TIMEOUT; input = getchar_timeout_us(0))
-    {
-        uart_putc(stim_uart_id, (char)input);
-    }
+    uart_write_blocking(stim_uart_id, data, len);
 }
