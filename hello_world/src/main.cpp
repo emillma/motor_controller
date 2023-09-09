@@ -33,25 +33,25 @@ void handle_usb_input()
         return;
     while (std::regex_search(data, match, re))
     {
+        data = match.suffix().str();
         uint8_t type = match[1].str().c_str()[0];
-        // msg = std::regex_replace(match[2].str(), stuff, "\xff");
-        msg = match[2].str();
-        if (type == 1)
+        msg = std::regex_replace(match[2].str(), stuff, "\xff");
+        if (type == 1) // watchdog
         {
             watchdog_update();
         }
-        else if (type == 2)
+
+        else if (type == 2) // Echo
         {
-            usb_send_id(1);
+            usb_send_id(2);
             usb_send_stuffed((uint8_t *)msg.c_str(), msg.size());
             usb_flush();
         }
-        else if (type == 3)
+        else if (type == 3) // Stim
         {
             printf("to stim: %s", msg.c_str());
             stim_write((uint8_t *)msg.c_str(), msg.size());
         }
-        data = match.suffix().str();
     }
 }
 
@@ -65,24 +65,22 @@ int main()
 
     usb_init();
     stim_init();
-    pwm_init();
+    // pwm_init();
     pio_inverter_init();
     i2c_init();
 
-    printf("Waiting for USB serial...\n");
-    while (getchar_timeout_us(1000) != 0x00)
-        sleep_ms(100);
-    watchdog_enable(2000, 1);
-    printf("Watchdog enabled\n");
+    watchdog_enable(5000, 1);
 
     while (true)
     {
+        watchdog_update();
+        for (int c = getchar_timeout_us(10); c != PICO_ERROR_TIMEOUT; c = getchar_timeout_us(10))
+        {
+            stim_write((uint8_t *)&c, 1);
+        }
         stim_forward();
-        handle_usb_input();
-
+        usb_flush();
         // f9p_a_forward();
         // f9p_b_forward();
-        // usb_flush();
-        sleep_ms(1);
     }
 }

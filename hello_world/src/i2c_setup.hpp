@@ -15,7 +15,7 @@
 void i2c_init()
 {
 
-    i2c_init(i2c_fp9, 300 * 1000);
+    i2c_init(i2c_fp9, 400 * 1000);
     gpio_set_function(i2c_f9p_sda, GPIO_FUNC_I2C);
     gpio_set_function(i2c_f9p_scl, GPIO_FUNC_I2C);
     gpio_pull_up(i2c_f9p_sda);
@@ -29,11 +29,11 @@ void i2c_forward(uint8_t addr, uint8_t id)
     const uint8_t reg = 0xfd;
     int written, read, available, chunk_size;
 
-    written = i2c_write_timeout_per_char_us(i2c_fp9, addr, &reg, 1, true, 100);
+    written = i2c_write_timeout_per_char_us(i2c_fp9, addr, &reg, 1, true, 10);
     if (written != 1)
         return;
     else
-        read = i2c_read_timeout_per_char_us(i2c_fp9, addr, rxdata, 2, false, 100);
+        read = i2c_read_timeout_per_char_us(i2c_fp9, addr, rxdata, 2, false, 10);
     if (read != 2)
         return;
 
@@ -43,7 +43,7 @@ void i2c_forward(uint8_t addr, uint8_t id)
     while (available > 0)
     {
         chunk_size = available > 4096 ? 4096 : available;
-        read = i2c_read_timeout_per_char_us(i2c_fp9, addr, rxdata, chunk_size, false, 100);
+        read = i2c_read_timeout_per_char_us(i2c_fp9, addr, rxdata, chunk_size, false, 10);
         if (read > 0)
         {
             usb_send_stuffed(rxdata, read);

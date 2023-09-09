@@ -22,60 +22,40 @@ async def reader(sock: WebSocketClientProtocol):
     pat = re.compile(b"\xff([\x00-\xfd])(.*?)(?=\xff[\x00-\xfd])", flags=re.DOTALL)
 
     async for message in sock:
-        # msgs = message.split(b"\xa7")
-        # print([len(m) for m in msgs])
-        # here = True
-
-        # for v in [_ for _ in message.split(b"\r") if _]:
-        #     try:
-        #         print(v.decode())
-        #     except UnicodeDecodeError:
-        #         print(v)
-        # print(message)
         buffer.extend(message)
         while match := pat.search(buffer):
-            buffer = buffer[match.end() :]
             key = int.from_bytes(match[1])
             val = re.sub(b"\xff\xfe", b"\xff", match[2])
-            rec.setdefault(key, bytearray()).extend(val)
-
-            # print([len(p) for p in rec[key].split(b"\xa7")])
-        #     if key == 1:
-        #         print(val)
-        #     elif key == 90:
-
-        # here = True
-    # if key == 90:
-    #     print(val)
-    # for line in val.split(b"\r"):
-    #     try:
-    #         print(line.decode())
-    #     except UnicodeDecodeError:
-    #         print(line)
-
-    # rec.setdefault(key, bytearray()).extend(val)
-    # buffer = buffer[match.end() :]
-    # parse_stim(rec[90])
+            buffer = buffer[match.end() :]
+            # print(key, len(val), [len(v) for v in val.split(b"\x93")])
+            for char in val:
+                if char == ord("\r"):
+                    print()
+                else:
+                    try:
+                        print(chr(char), end="")
+                    except UnicodeDecodeError:
+                        print(char, end="")
 
 
 async def writer(sock: WebSocketClientProtocol):
     await asyncio.sleep(1)
-    await sock.send(b"\x00")
-    await asyncio.sleep(1)
+    await sock.send(b"\x00")  # start
 
     async def echo():
         pass
         # for i in itertools.count():
-        # line = b"\xff\x02" + f"ask {i}".encode() + b"\xff\xff"
-        # await sock.send(line)
-        # await asyncio.sleep(1)
+        #     line = b"\xff\x02" + f"echo {i}".encode() + b"\xff\xff"
+        #     await sock.send(line)
+        #     await asyncio.sleep(1)
 
     async def stim():
-        pass
-        # await sock.send(b"\xff\x03SERVICEMODE\r\xff\xff")
-        # for _ in itertools.count():
-        #     line: str = await aioconsole.ainput()
-        #     await sock.send(b"\xff\x03" + line.encode() + b"\r\xff\xff")
+        for i in range(4):
+            await sock.send(b"SERVICEMODE\r")
+
+        for _ in itertools.count():
+            line: str = await aioconsole.ainput()
+            await sock.send(line.encode() + b"\r")
 
     await asyncio.gather(echo(), stim())
 
@@ -85,7 +65,7 @@ async def main():
     build_dir.mkdir(exist_ok=True)
     project_dir = Path(__file__).parents[1] / "hello_world"
 
-    # await build_and_flash(build_dir, project_dir)
+    await build_and_flash(build_dir, project_dir)
 
     print("Connecting")
     await connect_over_ws(reader, writer)

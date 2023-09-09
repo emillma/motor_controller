@@ -52,14 +52,15 @@ async def forward(websocket: WebSocketServerProtocol):
     async def writer():
         while websocket.open:
             if data := await websocket.recv():
-                ser.write(data)
+                await loop.run_in_executor(None,ser.write, data)
                 
-    async def watchdog():
-        while websocket.open:
-            await asyncio.sleep(0.5)
-            ser.write(b"\xff\x01\xff\xff")
+                
+    # async def watchdog():
+    #     while websocket.open:
+    #         await asyncio.sleep(0.5)
+    #         ser.write(b"\xff\x01\xff\xff")
             
-    await asyncio.gather(reader(), writer(), watchdog())
+    await asyncio.gather(reader(), writer())
     ser.close()
 
 

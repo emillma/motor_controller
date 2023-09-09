@@ -5,8 +5,8 @@
 
 void stim_init()
 {
-    // int baud_rate = 1843200;
-    int baud_rate = 921600;
+    int baud_rate = 1843200;
+    // int baud_rate = 921600;
     // int baud_rate = 460800;
     uart_init(stim_uart_id, baud_rate);
 
@@ -17,15 +17,14 @@ void stim_init()
 
 void stim_forward()
 {
-    uint8_t data;
+    uint8_t c;
     if (uart_is_readable(stim_uart_id))
-    {
         usb_send_id(90);
-    }
+
     while (uart_is_readable(stim_uart_id))
     {
-        data = uart_getc(stim_uart_id);
-        usb_send_stuffed(&data, 1);
+        c = uart_getc(stim_uart_id);
+        usb_send_stuffed(&c, 1);
     }
 }
 
