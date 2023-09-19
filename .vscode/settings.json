@@ -1,3 +1,7 @@
 {
-    "cmake.sourceDirectory": "${workspaceFolder}/hello_world"
+    "cmake.sourceDirectory": "${workspaceFolder}/hello_world",
+    "C_Cpp.files.exclude": {
+        "**/*.tmp": true,
+        "**/.vscode": true
+    }
 }

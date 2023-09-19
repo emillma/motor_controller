@@ -19,10 +19,13 @@ def load_script(script: bytes):
     path = Path("D:\\").joinpath("flash.uf2")
     for idx in range(20):
         
-        print(idx)
+        print(f"Lokking for pico dir {idx}")
         
         if path.parent.exists():
-            path.write_bytes(script)
+            print("Trying to flash")
+            with path.open("wb") as f:
+                f.write(script)
+            print("Wrote script")
             return
         try:
             serial.serial_for_url(url=get_url(), baudrate=1200)

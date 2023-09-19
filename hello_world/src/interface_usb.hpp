@@ -13,6 +13,7 @@ void usb_send_stuffed(const uint8_t *data, size_t len)
 {
     const uint8_t marker = 0xff;
     const uint8_t escape = 0xfe;
+
     for (size_t idx = 0; idx < len; idx++)
     {
         fwrite(&data[idx], 1, 1, stdout);
