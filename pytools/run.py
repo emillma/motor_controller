@@ -72,11 +72,13 @@ async def reader(sock: WebSocketClientProtocol):
                 print(key, decode(val))
 
             if key == 90:
-                messages = StimHandler.parse(val)
-                print(key, StimHandler.show(messages))
+                # ptin
+                print(key, len(val))
+                # messages = StimHandler.parse(val)
+                # print(key, StimHandler.show(messages))
 
             if key in {30, 31}:
-                print(key, val)
+                print(key, len(val))
 
             # print(key)
             # # print(key, len(val), [len(v) for v in val.split(b"\x93")])
