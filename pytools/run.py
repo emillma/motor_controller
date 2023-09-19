@@ -39,13 +39,23 @@ class StimHandler:
         messages = []
         for m in cls.stim_regx.finditer(cls.buffer):
             messages.append(m)
-        cls.buffer = cls.buffer[m.end() :]
+        try:
+            cls.buffer = cls.buffer[m.end() :]
+        except UnboundLocalError:
+            pass
         return messages
 
     @classmethod
     def show(cls, matches: list[re.Match]):
         counts = [int.from_bytes(m["counter"], "little") for m in matches]
         return counts
+
+
+def decode(data: bytes):
+    try:
+        return data.decode()
+    except UnicodeDecodeError:
+        print(data)
 
 
 async def reader(sock: WebSocketClientProtocol):
@@ -59,14 +69,14 @@ async def reader(sock: WebSocketClientProtocol):
             key = int.from_bytes(match[1], "little")
             val = re.sub(b"\xff\xfe", b"\xff", match[2])
             if key == 1:
-                print(key, val.decode())
+                print(key, decode(val))
 
             if key == 90:
                 messages = StimHandler.parse(val)
                 print(key, StimHandler.show(messages))
 
             if key in {30, 31}:
-                print(key, len(val))
+                print(key, val)
 
             # print(key)
             # # print(key, len(val), [len(v) for v in val.split(b"\x93")])

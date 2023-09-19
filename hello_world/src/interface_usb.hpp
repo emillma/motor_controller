@@ -3,6 +3,12 @@
 #include "pico/stdlib.h"
 #include "pico/stdio.h"
 
+void usb_init()
+{
+    stdio_usb_init();
+    stdio_set_translate_crlf(&stdio_usb, false);
+    // add_alarm_in_ms(100, usb_flush_alarm_callback, NULL, true);
+}
 void usb_send_id(uint8_t id)
 {
     const uint8_t header[] = {0xff, id};
@@ -26,11 +32,4 @@ void usb_send_stuffed(const uint8_t *data, size_t len)
 void usb_flush()
 {
     fflush(stdout);
-}
-
-void usb_init()
-{
-    stdio_usb_init();
-    stdio_set_translate_crlf(&stdio_usb, false);
-    // add_alarm_in_ms(100, usb_flush_alarm_callback, NULL, true);
 }

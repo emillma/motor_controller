@@ -30,21 +30,20 @@ void i2c_forward(uint8_t addr, uint8_t id)
     const uint8_t reg = 0xfd;
     int to_transfer, transferred;
 
-    // i2c_write_timeout_per_char_us(i2c_fp9, addr, &reg, 1, true, 10);
-    // int received = i2c_read_timeout_per_char_us(i2c_fp9, addr, available_rxdata, 2, false, 10);
-    // if (sent != 1 || received != 2)
-    //     return;
+    int sent = i2c_write_timeout_us(i2c_fp9, addr, &reg, 1, true, 1000);
+    int received = i2c_read_timeout_us(i2c_fp9, addr, available_rxdata, 2, false, 1000);
+    if (sent != 1 || received != 2)
+        return;
 
-    // int available = (rxdata[0] << 8 | rxdata[1]);
-    // if (available > 0)
-    //     usb_send_id(id);
-    // while (available > 0)
-    // {
-    //     to_transfer = available > 4096 ? 4096 : available;
-    //     transferred = i2c_read_timeout_per_char_us(i2c_fp9, addr, rxdata, to_transfer, false, 10);
-    //     usb_send_stuffed(rxdata, transferred);
-    //     available -= transferred;
-    // }
+    int available = (available_rxdata[0] << 8 | available_rxdata[1]);
+    if (available > 0)
+    {
+        available = available > 4096 ? 4096 : available;
+        transferred = i2c_read_blocking(i2c_fp9, addr, rxdata, available, false);
+        usb_send_id(id);
+        usb_send_stuffed(rxdata, transferred);
+        }
+    usb_flush();
 }
 
 void f9p_a_forward()

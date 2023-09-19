@@ -37,5 +37,8 @@ int main()
     {
         watchdog_update();
         stim_forward(stim_buffer);
+        f9p_a_forward();
+        f9p_b_forward();
+        // sleep_ms(500);
     }
 }
