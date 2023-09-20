@@ -48,6 +48,7 @@ class StimHandler:
     @classmethod
     def show(cls, matches: list[re.Match]):
         counts = [int.from_bytes(m["counter"], "little") for m in matches]
+        current = counts.pop(0)
         return counts
 
 
@@ -115,7 +116,7 @@ async def main():
     build_dir.mkdir(exist_ok=True)
     project_dir = Path(__file__).parents[1] / "hello_world"
 
-    # await build_and_flash(build_dir, project_dir)
+    await build_and_flash(build_dir, project_dir)
 
     print("Connecting")
     await connect_over_ws(reader, writer)

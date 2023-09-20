@@ -45,6 +45,7 @@ void core1_entry()
 
 int main()
 {
+    watchdog_enable(5000, 1);
     stdio_init_all();
 
     gpio_init(25);
@@ -65,7 +66,6 @@ int main()
 
     f9p_message_t msg;
     multicore_launch_core1(core1_entry);
-    watchdog_enable(5000, 1);
 
     while (true)
     {

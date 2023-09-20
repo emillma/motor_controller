@@ -68,14 +68,18 @@ async def forward(websocket: WebSocketServerProtocol):
 
 
 async def handle(websocket: WebSocketServerProtocol):
+    
     if websocket.path == "/flash":
         data = await websocket.recv()
         load_script(data)
         await websocket.send(b"OK")
 
     elif websocket.path == "/forward":
-        await forward(websocket)
-        
+        while True:
+            try:
+                await forward(websocket)
+            except serial.SerialException:
+                pass
     else:
         raise Exception("Unknown path")
 
