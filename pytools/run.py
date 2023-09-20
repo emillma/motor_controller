@@ -71,15 +71,16 @@ async def reader(sock: WebSocketClientProtocol):
             if key == 1:
                 print(key, decode(val))
 
-            if key == 90:
+            elif key == 90:
                 # ptin
                 print(key, len(val))
                 # messages = StimHandler.parse(val)
                 # print(key, StimHandler.show(messages))
 
-            if key in {30, 31}:
-                print(key, len(val))
-
+            elif key in {30, 31}:
+                print(key, val)
+            else:
+                print(key, len(val), val)
             # print(key)
             # # print(key, len(val), [len(v) for v in val.split(b"\x93")])
             # for char in val:
@@ -114,7 +115,7 @@ async def main():
     build_dir.mkdir(exist_ok=True)
     project_dir = Path(__file__).parents[1] / "hello_world"
 
-    await build_and_flash(build_dir, project_dir)
+    # await build_and_flash(build_dir, project_dir)
 
     print("Connecting")
     await connect_over_ws(reader, writer)
