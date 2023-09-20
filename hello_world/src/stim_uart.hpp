@@ -3,25 +3,7 @@
 #include <hardware/dma.h>
 
 #define STIM_BUFFER_SIZE 4096
-// static void prep_dma(uint dma_channel, uint chain_to, uint8_t *stim_buffer)
-// {
-//     const auto dreq = DREQ_UART1_RX;
-//     const auto uart_hw = uart1_hw;
 
-//     dma_channel_config config = dma_channel_get_default_config(dma_channel);
-//     channel_config_set_transfer_data_size(&config, DMA_SIZE_8);
-//     channel_config_set_write_increment(&config, true);
-//     channel_config_set_read_increment(&config, false);
-//     channel_config_set_dreq(&config, dreq);
-//     channel_config_set_chain_to(&config, chain_to);
-//     dma_channel_configure(
-//         dma_channel,
-//         &config,
-//         stim_buffer,
-//         &uart_hw->dr,
-//         STIM_BUFFER_SIZE,
-//         false);
-// }
 static void prep_dma(uint dma_channel, uint chain_to, uint8_t *stim_buffer)
 {
     const auto dreq = DREQ_UART1_RX;
