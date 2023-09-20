@@ -11,6 +11,7 @@ add_executable(my_program
                 "src/main.cpp")
 
 pico_generate_pio_header(my_program ${CMAKE_CURRENT_LIST_DIR}/pio/invert.pio)
+pico_generate_pio_header(my_program ${CMAKE_CURRENT_LIST_DIR}/pio/trigger.pio)
 
 add_compile_definitions(PICO_STDIO_USB_RESET_MAGIC_BAUD_RATE=1200)
 

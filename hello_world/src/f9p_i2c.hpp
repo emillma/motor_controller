@@ -13,6 +13,13 @@
 #define i2c_f9p_sda 26
 #define i2c_f9p_scl 27
 
+typedef struct
+{
+    uint8_t data[1024];
+    uint8_t id;
+    int32_t size;
+} f9p_message_t;
+
 static void reset_i2c()
 {
     gpio_put(i2c_f9p_scl, 0);
@@ -50,18 +57,13 @@ void i2c_init()
     bi_decl(bi_2pins_with_func(i2c_f9p_sda, i2c_f9p_scl, GPIO_FUNC_I2C));
 }
 
-typedef struct
-{
-    uint8_t data[1024];
-    uint8_t id;
-    int32_t size;
-} f9p_message_t;
-
 bool i2c_forward(uint8_t addr, f9p_message_t *msg)
 {
     uint8_t available_rxdata[2];
     const uint8_t reg = 0xfd;
     int available;
+
+    msg->id = addr;
 
     i2c_write_timeout_us(i2c_f9p, addr, &reg, 1, true, 1000);
     i2c_read_timeout_us(i2c_f9p, addr, msg->data, 2, true, 1000);
@@ -82,12 +84,10 @@ bool i2c_forward(uint8_t addr, f9p_message_t *msg)
 
 bool f9p_a_forward(f9p_message_t *msg)
 {
-    msg->id = 30;
     return i2c_forward(30, msg);
 }
 
 bool f9p_b_forward(f9p_message_t *msg)
 {
-    msg->id = 31;
     return i2c_forward(31, msg);
 }

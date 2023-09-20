@@ -1,12 +1,12 @@
 #pragma once
 #include "invert.pio.h"
 
-#define pio pio0
-#define pin_in 8
-#define pin_out 7
-
-static inline void pio_inverter_init()
+static inline void inverter_pio_init()
 {
+    const auto pio = pio0;
+    const auto pin_out = 7;
+    const auto pin_in = 8;
+
     int sm = pio_claim_unused_sm(pio, true);
     pio_sm_set_consecutive_pindirs(pio, sm, pin_out, 1, true);
     pio_gpio_init(pio, pin_out);
@@ -15,7 +15,7 @@ static inline void pio_inverter_init()
     pio_sm_config c = invert_program_get_default_config(offset);
     sm_config_set_in_pins(&c, pin_in);
     sm_config_set_out_pins(&c, pin_out, 1);
-    // sm_config_set_set_pins(&c, pin_out, 1);
+    sm_config_set_set_pins(&c, pin_out, 1);
 
     // sm_config_set_fifo_join(&c, PIO_FIFO_JOIN_RX);
 

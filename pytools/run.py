@@ -47,8 +47,10 @@ class StimHandler:
 
     @classmethod
     def show(cls, matches: list[re.Match]):
-        counts = [int.from_bytes(m["counter"], "little") for m in matches]
-        current = counts.pop(0)
+        return [m for m in matches]
+        # counts = [int.from_bytes(m["counter"], "little") for m in matches]
+
+        # current = counts.pop(0)
         return counts
 
 
@@ -71,7 +73,6 @@ async def reader(sock: WebSocketClientProtocol):
             val = re.sub(b"\xff\xfe", b"\xff", match[2])
             if key == 1:
                 print(key, decode(val))
-
             elif key == 90:
                 # ptin
                 print(key, len(val))

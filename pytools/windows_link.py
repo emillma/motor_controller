@@ -76,10 +76,9 @@ async def handle(websocket: WebSocketServerProtocol):
 
     elif websocket.path == "/forward":
         while True:
-            try:
-                await forward(websocket)
-            except serial.SerialException:
-                pass
+            
+            await forward(websocket)
+            
     else:
         raise Exception("Unknown path")
 

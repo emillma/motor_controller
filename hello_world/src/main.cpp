@@ -61,7 +61,7 @@ int main()
     usb_init();
     stim_init(stim_buffer);
     pwm_init();
-    pio_inverter_init();
+    inverter_pio_init();
     i2c_init();
 
     f9p_message_t msg;
