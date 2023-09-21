@@ -1,21 +1,38 @@
 
 .program trigger
-    set y, 1
+
 .wrap_target
-    mov x, pins
-    jmp !x trigger
+pps_high:
+    mov osr, pins
+    mov pins, osr
+    jmp pin pps_high 
 
-trigger:
+    set y, 0
+    out x, 1
+    jmp x-- tov_is_high_wait_for_low 
     
+tov_is_low_wait_for_high:
+    jmp y-- nojmp_0
+nojmp_0:
+    mov osr, pins
+    out x, 1
+    jmp !x tov_is_low_wait_for_high 
 
-
-    set pins, 1 
-
-    wait 1 pin 0
-    wait 0 pin 0
-
+tov_is_high_wait_for_low:
+    jmp y-- nojmp_1
+nojmp_1:
+    mov osr, pins
+    out x, 1
+    jmp x-- tov_is_high_wait_for_low 
     
-
+slow_trigger:
+    set x, 10
+delay:
+    nop [29]
+    jmp x-- delay
     set pins, 0 [9]
-    ; mov pins, pins
+    set pins, 1
 .wrap  
+
+
+

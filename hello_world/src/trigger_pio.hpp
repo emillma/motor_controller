@@ -1,5 +1,7 @@
 #pragma once
 #include "trigger.pio.h"
+#include "pico/stdlib.h"
+#include "hardware/clocks.h"
 
 PIO trigger_pio;
 int trigger_sm;
@@ -9,6 +11,9 @@ static inline void trigger_pio_init()
     const auto pin_jmp = 18;
     const auto pin_out = 19;
     const auto pin_in = 20;
+
+    gpio_init(pin_in);
+    gpio_set_dir(pin_in, GPIO_IN);
 
     trigger_pio = pio0;
 
@@ -26,8 +31,9 @@ static inline void trigger_pio_init()
     sm_config_set_out_pins(&c, pin_out, 1);
     sm_config_set_set_pins(&c, pin_out, 1);
     sm_config_set_sideset_pins(&c, pin_out);
-
-    sm_config_set_clkdiv_int_frac(&c, 133, 10);
+    // clock_get_hz(clk_sys);
+    float div = clock_get_hz(clk_sys) / 1000000.f;
+    sm_config_set_clkdiv(&c, div);
 
     pio_sm_init(trigger_pio, trigger_sm, offset, &c);
     pio_sm_set_pins(trigger_pio, trigger_sm, 1);

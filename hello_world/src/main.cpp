@@ -13,6 +13,7 @@
 #include "leds.hpp"
 #include "inverter_pio.hpp"
 #include "trigger_pio.hpp"
+#include "trigger_pwm.hpp"
 #include "stim_uart.hpp"
 #include "f9p_i2c.hpp"
 
@@ -45,7 +46,8 @@ void core1_entry()
 
 int main()
 {
-    set_sys_clock_khz(133000, true);
+    // sleep_ms(1000);
+    // set_sys_clock_khz(133000, true);
     watchdog_enable(5000, 1);
     stdio_init_all();
 
@@ -61,7 +63,7 @@ int main()
 
     usb_init();
     stim_init();
-
+    // pwm_init();
     trigger_pio_init();
     inverter_pio_init();
     i2c_init();
