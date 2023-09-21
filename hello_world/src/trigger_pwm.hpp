@@ -11,7 +11,7 @@ void pwm_init()
     pwm_config_set_clkdiv(&config, 125.0f);
     pwm_config_set_output_polarity(&config, true, true);
     pwm_init(slice_num, &config, false);
-    pwm_set_wrap(slice_num, 500);
+    pwm_set_wrap(slice_num, 1000);
     pwm_set_chan_level(slice_num, chan_num, 100);
     pwm_set_enabled(slice_num, true);
 }

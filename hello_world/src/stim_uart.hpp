@@ -2,9 +2,17 @@
 #include "hardware/uart.h"
 #include <hardware/dma.h>
 
-#define STIM_BUFFER_SIZE 4096
+// stim struct
 
-static void prep_dma(uint dma_channel, uint chain_to, uint8_t *stim_buffer)
+typedef struct
+{
+    uint8_t data[38 * 256];
+} stim_message_t;
+
+static const size_t stim_message_size = sizeof(stim_message_t);
+extern stim_message_t stim_buffers[2];
+
+static void prep_dma(uint dma_channel, uint chain_to, stim_message_t *stim_buffer)
 {
     const auto dreq = DREQ_UART1_RX;
     const auto uart_hw = uart1_hw;
@@ -22,13 +30,13 @@ static void prep_dma(uint dma_channel, uint chain_to, uint8_t *stim_buffer)
     dma_channel_configure(
         dma_channel,
         &config,
-        stim_buffer,
+        stim_buffer->data,
         &uart_hw->dr,
-        STIM_BUFFER_SIZE,
+        stim_message_size,
         false);
 }
 
-void stim_init(uint8_t stim_buffer[2][STIM_BUFFER_SIZE])
+void stim_init()
 {
     const auto uart = uart1;
     const int baud_rate = 1843200;
@@ -39,19 +47,19 @@ void stim_init(uint8_t stim_buffer[2][STIM_BUFFER_SIZE])
     gpio_set_function(pin0, GPIO_FUNC_UART);
     gpio_set_function(pin1, GPIO_FUNC_UART);
 
-    prep_dma(0, 1, stim_buffer[0]);
-    prep_dma(1, 0, stim_buffer[1]);
+    prep_dma(0, 1, &stim_buffers[0]);
+    prep_dma(1, 0, &stim_buffers[1]);
     dma_channel_start(0);
 }
 
-void stim_forward(uint8_t stim_buffer[2][STIM_BUFFER_SIZE])
+void stim_forward()
 {
     static int current = 0;
-    if (dma_channel_hw_addr(current)->transfer_count == 0)
+    if (!dma_channel_is_busy(current))
     {
         usb_send_id(90);
-        usb_send_stuffed(stim_buffer[current], STIM_BUFFER_SIZE);
-        prep_dma(current, (current + 1) % 2, stim_buffer[current]);
+        usb_send_stuffed(stim_buffers[current].data, stim_message_size);
+        prep_dma(current, (current + 1) % 2, &stim_buffers[current]);
         current = (current + 1) % 2;
         // usb_flush();
     }

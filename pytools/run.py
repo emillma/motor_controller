@@ -46,12 +46,29 @@ class StimHandler:
         return messages
 
     @classmethod
-    def show(cls, matches: list[re.Match]):
-        return [m for m in matches]
-        # counts = [int.from_bytes(m["counter"], "little") for m in matches]
+    def show_counter(cls, matches: list[re.Match]):
+        counts = [int.from_bytes(m["counter"], "little") for m in matches]
+        current = []
+        ranges = []
 
-        # current = counts.pop(0)
-        return counts
+        for c in counts:
+            if not current:
+                current.append(c)
+            elif c == current[-1] + 1:
+                current.append(c)
+            else:
+                ranges.append(current)
+                current = [c]
+        if current:
+            ranges.append(current)
+        return ",".join(
+            [f"{r[0]}-{r[-1]}" if len(r) > 1 else str(r[0]) for r in ranges]
+        )
+
+    @classmethod
+    def show_latency(cls, matches: list[re.Match]):
+        latencies = [int.from_bytes(m["latency"], "big") for m in matches]
+        return np.mean(latencies)
 
 
 def decode(data: bytes):
@@ -75,9 +92,9 @@ async def reader(sock: WebSocketClientProtocol):
                 print(key, decode(val))
             elif key == 90:
                 # ptin
-                print(key, len(val))
-                # messages = StimHandler.parse(val)
-                # print(key, StimHandler.show(messages))
+                # print(key, len(val))
+                messages = StimHandler.parse(val)
+                print(key, len(val), StimHandler.show_latency(messages))
 
             elif key in {30, 31}:
                 print(key, val)
