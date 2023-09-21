@@ -19,6 +19,7 @@ static inline void trigger_pio_init()
 
     trigger_sm = pio_claim_unused_sm(trigger_pio, true);
     pio_sm_set_consecutive_pindirs(trigger_pio, trigger_sm, pin_out, 1, true);
+    pio_sm_set_consecutive_pindirs(trigger_pio, trigger_sm, pin_in, 1, false);
 
     uint offset = pio_add_program(trigger_pio, &trigger_program);
     pio_sm_config c = trigger_program_get_default_config(offset);
@@ -30,7 +31,7 @@ static inline void trigger_pio_init()
     pio_gpio_init(trigger_pio, pin_out);
     sm_config_set_out_pins(&c, pin_out, 1);
     sm_config_set_set_pins(&c, pin_out, 1);
-    sm_config_set_sideset_pins(&c, pin_out);
+    // sm_config_set_sideset_pins(&c, pin_out);
     // clock_get_hz(clk_sys);
     float div = clock_get_hz(clk_sys) / 1000000.f;
     sm_config_set_clkdiv(&c, div);

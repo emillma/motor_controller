@@ -26,9 +26,9 @@ nojmp_1:
     jmp x-- tov_is_high_wait_for_low 
     
 slow_trigger:
-    set x, 10
+    set x, 20
 delay:
-    nop [29]
+    nop [9]
     jmp x-- delay
     set pins, 0 [9]
     set pins, 1
