@@ -1,17 +1,21 @@
 
 .program trigger
-
-    mov y, ! y
+    set y, 1
 .wrap_target
-    jmp y-- nojump
-nojump:
-    set pins, 0 [8]
-    set pins, 1 
-    
-    mov isr, ! y
-    push noblock 
-    set x 19
-repeat:
-    jmp x-- repeat [24]
-.wrap  
+    mov x, pins
+    jmp !x trigger
 
+trigger:
+    
+
+
+    set pins, 1 
+
+    wait 1 pin 0
+    wait 0 pin 0
+
+    
+
+    set pins, 0 [9]
+    ; mov pins, pins
+.wrap  

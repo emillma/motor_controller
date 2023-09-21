@@ -6,20 +6,28 @@ int trigger_sm;
 
 static inline void trigger_pio_init()
 {
+    const auto pin_jmp = 18;
     const auto pin_out = 19;
+    const auto pin_in = 20;
+
     trigger_pio = pio0;
 
     trigger_sm = pio_claim_unused_sm(trigger_pio, true);
     pio_sm_set_consecutive_pindirs(trigger_pio, trigger_sm, pin_out, 1, true);
-    pio_gpio_init(trigger_pio, pin_out);
 
     uint offset = pio_add_program(trigger_pio, &trigger_program);
     pio_sm_config c = trigger_program_get_default_config(offset);
-    // sm_config_set_in_pins(&c, pin_in);
+
+    sm_config_set_in_pins(&c, pin_in);
+    sm_config_set_jmp_pin(&c, pin_jmp);
+    gpio_pull_up(pin_jmp);
+
+    pio_gpio_init(trigger_pio, pin_out);
     sm_config_set_out_pins(&c, pin_out, 1);
     sm_config_set_set_pins(&c, pin_out, 1);
     sm_config_set_sideset_pins(&c, pin_out);
-    sm_config_set_clkdiv_int_frac(&c, 125, 0);
+
+    sm_config_set_clkdiv_int_frac(&c, 133, 10);
 
     pio_sm_init(trigger_pio, trigger_sm, offset, &c);
     pio_sm_set_pins(trigger_pio, trigger_sm, 1);
