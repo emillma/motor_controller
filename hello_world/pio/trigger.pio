@@ -4,35 +4,42 @@
 .wrap_target
 pps_high:
     mov osr, pins
-    mov pins, osr
-    jmp pin pps_high 
-
+    out pins, 1
+    out x, 1
+    jmp x-- pps_high
     set y, 0
-    out x, 1
-    jmp x-- tov_is_high_wait_for_low 
-    
-tov_is_low_wait_for_high:
-    jmp y-- nojmp_0
-nojmp_0:
-    mov osr, pins
-    out x, 1
-    jmp !x tov_is_low_wait_for_high 
 
-tov_is_high_wait_for_low:
-    jmp y-- nojmp_1
-nojmp_1:
-    mov osr, pins
-    out x, 1
-    jmp x-- tov_is_high_wait_for_low 
-    
-slow_trigger:
-    set x, 20
-delay:
-    nop [9]
-    jmp x-- delay
-    set pins, 0 [9]
+tov_low_pps_low:
+    jmp pin tov_high_pps_low
+    set pins, 0
+    jmp y-- a
+        a:
+    jmp tov_low_pps_low [7]
+
+tov_high_pps_low:
+    jmp pin no_trigger
+    jmp continue
+no_trigger:
     set pins, 1
+    jmp y-- b
+        b:
+    jmp tov_high_pps_low [6]
+
+continue:
+    set x, 20
+loop:
+    jmp x-- loop [24]
+
+    mov isr, y
+    push noblock
+pps_low:
+    mov osr, pins
+    out pins, 1
+    out x, 1
+    jmp !x pps_low
 .wrap  
+    
+
 
 
 

@@ -75,11 +75,11 @@ int main()
     {
         watchdog_update();
         stim_forward();
-        // if (queue_try_remove(&ba_queue, &msg))
-        // {
-        //     usb_send_id(msg.id);
-        //     usb_send_stuffed(msg.data, msg.size);
-        //     queue_add_blocking(&ab_queue, &msg);
-        // }
+        if (queue_try_remove(&ba_queue, &msg))
+        {
+            usb_send_id(msg.id);
+            usb_send_stuffed(msg.data, msg.size);
+            queue_add_blocking(&ab_queue, &msg);
+        }
     }
 }

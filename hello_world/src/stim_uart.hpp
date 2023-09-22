@@ -61,6 +61,9 @@ void stim_forward()
         usb_send_stuffed(stim_buffers[current].data, stim_message_size);
         prep_dma(current, (current + 1) % 2, &stim_buffers[current]);
         current = (current + 1) % 2;
-        // usb_flush();
-    }
+
+        uint32_t stamp = trigger_pio_get();
+        usb_send_id(91);
+        usb_send_stuffed((uint8_t *)&stamp, 4);
+        }
 }
