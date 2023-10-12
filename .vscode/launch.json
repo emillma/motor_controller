@@ -13,7 +13,15 @@
             "justMyCode": true
         },
         {
-            "name": "Python: Pico",
+            "name": "Python: Navbox",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/pytools/run_navbox.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Run",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/pytools/run.py",

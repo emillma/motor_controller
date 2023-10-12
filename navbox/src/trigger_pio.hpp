@@ -8,9 +8,9 @@ static int trigger_sm;
 
 static inline void trigger_pio_init()
 {
-    const auto pin_trigger = 19;
-    const auto pin_tov = 20;
-    const auto pin_pps = 21;
+    const auto pin_tov = 19;
+    const auto pin_trigger = 20;
+    const auto pin_stamp = 21;
 
     const auto pin_led = 25;
 
@@ -20,31 +20,30 @@ static inline void trigger_pio_init()
     uint offset = pio_add_program(trigger_pio, &trigger_program);
     pio_sm_config c = trigger_program_get_default_config(offset);
 
+    pio_gpio_init(trigger_pio, pin_trigger);
+    pio_gpio_init(trigger_pio, pin_stamp);
+    pio_sm_set_consecutive_pindirs(trigger_pio, trigger_sm, pin_trigger, 2, true);
+    // gpio_pull_up(pin_tov);
+
     // in_pins
     sm_config_set_in_pins(&c, pin_tov);
-    gpio_pull_up(pin_tov);
-    // jmp_pin
-    sm_config_set_jmp_pin(&c, pin_tov);
-    gpio_pull_up(pin_pps);
 
     // out_pins
-    sm_config_set_out_pins(&c, pin_trigger, 1);
-    pio_gpio_init(trigger_pio, pin_trigger);
-    pio_sm_set_consecutive_pindirs(trigger_pio, trigger_sm, pin_trigger, 1, true);
-    pio_sm_set_pins(trigger_pio, pin_trigger, 1);
+    sm_config_set_out_pins(&c, pin_trigger, 2);
 
     // set_pins
-    sm_config_set_set_pins(&c, pin_trigger, 1);
-    pio_gpio_init(trigger_pio, pin_trigger);
-    pio_sm_set_consecutive_pindirs(trigger_pio, trigger_sm, pin_trigger, 1, true);
+    sm_config_set_set_pins(&c, pin_trigger, 2);
 
     // clock speed
     float div = clock_get_hz(clk_sys) / 1e7;
     sm_config_set_clkdiv(&c, div);
 
     //  init
+    pio_sm_set_pins(trigger_pio, pin_trigger, 1);
     pio_sm_init(trigger_pio, trigger_sm, offset, &c);
+    pio_sm_put(trigger_pio, trigger_sm, (uint32_t)2000);
 }
+
 static inline void trigger_start()
 {
     pio_sm_set_enabled(trigger_pio, trigger_sm, true);

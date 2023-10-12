@@ -3,6 +3,7 @@ import asyncio
 import shlex
 from websockets.legacy.client import Connect
 import logging
+import sys
 
 
 async def cmake(build_dir: Path, project_dir: Path, build_type="Release"):
@@ -28,7 +29,11 @@ async def build_and_flash(build_dir: Path, project_dir: Path, build_type="Releas
     url = "ws://host.docker.internal:8765/flash"
     async with Connect(url, ping_timeout=None) as sock:
         await sock.send(binary)
-        return await sock.recv()
+        try:
+            return await sock.recv()
+        except Exception as e:
+            print("Error while flashing", e)
+            sys.exit(0)
 
 
 async def connect_over_ws(reader, writer):

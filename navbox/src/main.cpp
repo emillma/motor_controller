@@ -69,7 +69,7 @@ int main()
     i2c_init();
 
     f9p_message_t msg;
-    // multicore_launch_core1(core1_entry);
+    multicore_launch_core1(core1_entry);
     trigger_start();
     while (true)
     {

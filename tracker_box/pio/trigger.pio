@@ -1,0 +1,34 @@
+
+.program trigger
+    set pins 0b11 
+    pull block
+    mov x osr
+repeat:
+    jmp x-- repeat ; initial wait
+    set pins 0b01 [19]
+    set pins 0b11 [19]
+    pull block
+    mov isr osr ; isr = count
+    pull block  ; osr = wait
+.wrap_target
+wrap_target:
+    jmp y-- nostamp
+    set pins 0b00 [9]
+    set pins 0b11 [9]
+    mov x osr
+wait_loop2:
+    jmp x-- wait_loop2
+    mov y isr
+    jmp wrap_target
+
+nostamp:
+    set pins 0b10 [9]
+    set pins 0b11 [9]
+    mov x osr
+wait_loop:
+    jmp x-- wait_loop 
+    nop [2]
+.wrap  
+
+
+

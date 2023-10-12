@@ -3,15 +3,9 @@ import asyncio
 import time
 import serial
 from websockets.legacy.server import Serve, WebSocketServerProtocol
+from wtools import get_url
 import serial.tools.list_ports
 
-def get_url():
-    for _ in range(20):
-        ports = serial.tools.list_ports.comports()
-        if (num := len(ports)) == 1:
-            return ports[0].device
-        time.sleep(0.2)
-    raise Exception(f"Found {num} ports, expected 1")
     
 
 
@@ -19,7 +13,7 @@ def load_script(script: bytes):
     path = Path("D:\\").joinpath("flash.uf2")
     for idx in range(20):
         
-        print(f"Lokking for pico dir {idx}")
+        print(f"Lo0king for pico dir {idx}")
         
         if path.parent.exists():
             print("Trying to flash")
@@ -29,9 +23,9 @@ def load_script(script: bytes):
             return
         try:
             serial.serial_for_url(url=get_url(), baudrate=1200)
-        except Exception:
+        except Exception as e:
             pass
-        time.sleep(0.2)
+        time.sleep(0.5)
         
     raise Exception("Could not flash")
 

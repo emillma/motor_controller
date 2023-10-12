@@ -12,7 +12,7 @@
 #define i2c_f9p i2c1
 #define i2c_f9p_sda 26
 #define i2c_f9p_scl 27
-
+#define f9p_max_size 4096
 typedef struct
 {
     uint8_t data[1024];
@@ -49,8 +49,7 @@ void i2c_init()
 {
 
     i2c_init(i2c_f9p, 400 * 1000);
-    gpio_pull_up(i2c_f9p_scl);
-    gpio_pull_up(i2c_f9p_sda);
+    gpio_set_pulls(i2c_f9p_sda, false, false);
     reset_i2c();
     gpio_set_function(i2c_f9p_scl, GPIO_FUNC_I2C);
     gpio_set_function(i2c_f9p_sda, GPIO_FUNC_I2C);
@@ -74,7 +73,7 @@ bool i2c_forward(uint8_t addr, f9p_message_t *msg)
     else if (available > 1022)
         available = 1022;
 
-    i2c_read_timeout_us(i2c_f9p, addr, &msg->data[2], available, false, 10000);
+    i2c_read_timeout_us(i2c_f9p, addr, msg->data, available, false, 10000);
 
     // i2c_write_timeout_us(i2c_fp9, addr, &reg, 1, true, 1000);
     // i2c_read_timeout_us(i2c_fp9, addr, msg->data, available, false, 10000);

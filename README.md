@@ -7,3 +7,5 @@ In wsl run:
 sudo touch /etc/profile.d/vscode_devcontainer_envs_tmp.sh
 sudo chmod 666 vscode_devcontainer_envs_tmp.sh
 ```
+
+f9p 68 * 3

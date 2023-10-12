@@ -47,6 +47,9 @@ void stim_init()
     gpio_set_function(pin0, GPIO_FUNC_UART);
     gpio_set_function(pin1, GPIO_FUNC_UART);
 
+    while (uart_is_readable(uart))
+        uart_getc(uart);
+
     prep_dma(0, 1, &stim_buffers[0]);
     prep_dma(1, 0, &stim_buffers[1]);
     dma_channel_start(0);
@@ -62,8 +65,10 @@ void stim_forward()
         prep_dma(current, (current + 1) % 2, &stim_buffers[current]);
         current = (current + 1) % 2;
 
-        uint32_t stamp = trigger_pio_get();
-        usb_send_id(91);
-        usb_send_stuffed((uint8_t *)&stamp, 4);
+        if (uint32_t stamp = trigger_pio_get())
+        {
+            usb_send_id(91);
+            usb_send_stuffed((uint8_t *)&stamp, 4);
         }
+    }
 }
