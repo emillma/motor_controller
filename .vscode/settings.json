@@ -1,7 +1,13 @@
 {
-    "cmake.sourceDirectory": "/workspaces/home/pico/stim_config",
+    "cmake.sourceDirectory": "/workspaces/home/pico/navbox",
     "C_Cpp.files.exclude": {
         "**/*.tmp": true,
         "**/.vscode": true
+    },
+    "files.associations": {
+        "*.spec": "python",
+        "*.jinja": "jinja",
+        "*.cu": "cuda-cpp",
+        "random": "cpp"
     }
 }

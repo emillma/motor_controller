@@ -9,6 +9,7 @@ from io import BytesIO
 import re
 from pprint import pprint
 import numpy as np
+import time
 
 
 def parse_stim(data: bytearray):
@@ -76,68 +77,55 @@ class StimHandler:
 
 
 def decode(data: bytes):
-    try:
-        return data.decode()
-    except UnicodeDecodeError:
-        print(data)
+    return data.decode(errors="backslashreplace")
 
 
 async def reader(sock: WebSocketClientProtocol):
     rec: dict[int, bytearray] = dict()
     buffer = bytearray()
-    msg_regx = re.compile(b"\xff([\x00-\xfd])(.*?)(?=\xff[\x00-\xfd])", flags=re.DOTALL)
+    msg_regx = re.compile(b"\xfe([\x00-\xfd])(.*?)(?=\xfe[\x00-\xfd])", flags=re.DOTALL)
+
+    t0 = time.perf_counter()
+    total = 0
     async for message in sock:
         buffer.extend(message)
         while match := msg_regx.search(buffer):
             buffer = buffer[match.end() :]
             key = int.from_bytes(match[1], "little")
-            val = re.sub(b"\xff\xfe", b"\xff", match[2])
-            if key == 1:
-                print(key, decode(val))
-            elif key == 90:
-                # ptin
-                # print(key, len(val))
-                messages = StimHandler.parse(val)
-                print(key, len(val), StimHandler.show_counter(messages))
-                print(key, len(val), StimHandler.show_latency(messages))
+            val = re.sub(b"\xfe\xff", b"\xfe", match[2])
+            messages = StimHandler.parse(val)
+            print(key, len(val), StimHandler.show_counter(messages))
+            # print(key, len(val), StimHandler.show_latency(messages))
+            # if key == 1:
+        #         print(key, decode(val))
+        #     elif key == 90:
+        #         # ptin
+        #         # print(key, len(val))
 
-            elif key in {30, 31}:
-                print(key, val)
-            else:
-                print(key, len(val), val)
-            # print(key)
-            # # print(key, len(val), [len(v) for v in val.split(b"\x93")])
-            # for char in val:
-            #     if char == ord("\r"):
-            #         print()
-            #     else:
-            #         try:
-            #             print(chr(char), end="")
-            #         except UnicodeDecodeError:
-            #             print(char, end="")
+        #     elif key in {30, 31}:
+        #         print(key, val)
+        #     else:
+        #         print(key, len(val), val)
+        # print(key)
+        # # print(key, len(val), [len(v) for v in val.split(b"\x93")])
+        # for char in val:
+        #     if char == ord("\r"):
+        #         print()
+        #     else:
+        #         try:
+        #             print(chr(char), end="")
+        #         except UnicodeDecodeError:
+        #             print(char, end="")
 
 
 async def writer(sock: WebSocketClientProtocol):
-    await asyncio.sleep(1)
     return
-    await sock.send(b"\x00")  # start
-
-    async def stim():
-        pass
-        # for i in range(4):
-        #     await sock.send(b"SERVICEMODE\r")
-
-        # for _ in itertools.count():
-        #     line: str = await aioconsole.ainput()
-        #     await sock.send(line.encode() + b"\r")
-
-    await asyncio.gather(echo(), stim())
 
 
 async def main():
     build_dir = Path(__file__).parents[1] / "build"
     build_dir.mkdir(exist_ok=True)
-    project_dir = Path(__file__).parents[1] / "hello_world"
+    project_dir = Path(__file__).parents[1] / "navbox"
 
     await build_and_flash(build_dir, project_dir)
 
