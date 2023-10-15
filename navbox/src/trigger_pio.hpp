@@ -6,7 +6,7 @@
 static PIO trigger_pio;
 static int trigger_sm;
 
-static inline void trigger_pio_init()
+static inline void init_trigger_pio()
 {
     const auto pin_tov = 19;
     const auto pin_trigger = 20;

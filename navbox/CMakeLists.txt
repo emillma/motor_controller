@@ -7,31 +7,32 @@ pico_sdk_init()
 project(my_project)
 
 
-add_executable(my_program 
+add_executable(navbox 
                 "src/main.cpp")
 
-pico_generate_pio_header(my_program ${CMAKE_CURRENT_LIST_DIR}/pio/invert.pio)
-pico_generate_pio_header(my_program ${CMAKE_CURRENT_LIST_DIR}/pio/trigger.pio)
+pico_generate_pio_header(navbox ${CMAKE_CURRENT_LIST_DIR}/pio/invert.pio)
+pico_generate_pio_header(navbox ${CMAKE_CURRENT_LIST_DIR}/pio/trigger.pio)
+pico_generate_pio_header(navbox ${CMAKE_CURRENT_LIST_DIR}/pio/uart.pio)
 
 add_compile_definitions(PICO_STDIO_USB_RESET_MAGIC_BAUD_RATE=1200)
 
-target_link_libraries(my_program 
+target_link_libraries(navbox 
         pico_stdlib 
         hardware_pwm
         pico_unique_id 
         hardware_watchdog 
         hardware_adc 
-        hardware_i2c
         hardware_pio 
         hardware_clocks 
         hardware_spi 
+        hardware_i2c 
         pico_multicore
         hardware_dma 
         hardware_irq )
         
-pico_enable_stdio_usb(my_program 1)
-pico_enable_stdio_uart(my_program 0)
-pico_add_extra_outputs(my_program)
+pico_enable_stdio_usb(navbox 1)
+pico_enable_stdio_uart(navbox 0)
+pico_add_extra_outputs(navbox)
 
 
 

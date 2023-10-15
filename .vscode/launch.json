@@ -21,6 +21,14 @@
             "justMyCode": true
         },
         {
+            "name": "Python: stim config",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/pytools/stim_config.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
             "name": "Python: Run",
             "type": "python",
             "request": "launch",

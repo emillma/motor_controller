@@ -18,21 +18,22 @@ void uart_write_char(uint8_t c)
 
 void uart_send_stuffed(const uint8_t *data, size_t len)
 {
-    const uint8_t marker = 0xff;
-    const uint8_t escape = 0xfe;
+    const uint8_t marker = 0xfe;
 
     for (size_t idx = 0; idx < len; idx++)
     {
-        uart_write_char(data[idx]);
-        if (data[idx] == marker)
         {
-            uart_write_char(escape);
+            uart_write_char(data[idx]);
+            if (data[idx] == marker)
+            {
+                uart_write_char(marker);
+            }
         }
     }
 }
 
 void uart_send_id(uint8_t id)
 {
-    uart_write_char(0xff);
+    uart_write_char(0xfe);
     uart_write_char(id);
 }

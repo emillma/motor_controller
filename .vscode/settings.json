@@ -1,5 +1,5 @@
 {
-    "cmake.sourceDirectory": "${workspaceFolder}/hello_world",
+    "cmake.sourceDirectory": "/workspaces/home/pico/stim_config",
     "C_Cpp.files.exclude": {
         "**/*.tmp": true,
         "**/.vscode": true

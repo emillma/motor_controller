@@ -2,13 +2,6 @@
 
 #pragma once
 
-void init_led()
-{
-    gpio_init(25);
-    gpio_set_dir(25, GPIO_OUT);
-    blink_fast();
-
-}
 
 int64_t turn_off(alarm_id_t id, void *user_data)
 {
@@ -31,4 +24,12 @@ void blink_fast()
         blink_for(25);
         sleep_ms(50);
     }
+}
+
+void init_led()
+{
+    gpio_init(25);
+    gpio_set_dir(25, GPIO_OUT);
+    blink_fast();
+
 }

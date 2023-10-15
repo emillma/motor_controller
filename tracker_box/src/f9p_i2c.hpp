@@ -12,10 +12,10 @@
 #define i2c_f9p i2c1
 #define i2c_f9p_sda 26
 #define i2c_f9p_scl 27
-#define f9p_max_size 4096
+#define f9p_max_size 2048
 typedef struct
 {
-    uint8_t data[1024];
+    uint8_t data[f9p_max_size];
     uint8_t id;
     int32_t size;
 } f9p_message_t;
@@ -56,7 +56,7 @@ void i2c_init()
     bi_decl(bi_2pins_with_func(i2c_f9p_sda, i2c_f9p_scl, GPIO_FUNC_I2C));
 }
 
-bool i2c_forward(uint8_t addr, f9p_message_t *msg)
+bool f9p_forward(uint8_t addr, f9p_message_t *msg)
 {
     uint8_t available_rxdata[2];
     const uint8_t reg = 0xfd;
@@ -65,28 +65,15 @@ bool i2c_forward(uint8_t addr, f9p_message_t *msg)
     msg->id = addr;
 
     i2c_write_timeout_us(i2c_f9p, addr, &reg, 1, true, 1000);
-    i2c_read_timeout_us(i2c_f9p, addr, msg->data, 2, true, 1000);
+    i2c_read_timeout_us(i2c_f9p, addr, available_rxdata, 2, true, 1000);
 
-    available = (msg->data[0] << 8 | msg->data[1]);
+    available = (available_rxdata[0] << 8 | available_rxdata[1]);
     if (available == 0xffff)
         available = 0;
-    else if (available > 1022)
-        available = 1022;
+    else if (available > f9p_max_size)
+        available = f9p_max_size;
 
-    i2c_read_timeout_us(i2c_f9p, addr, msg->data, available, false, 10000);
-
-    // i2c_write_timeout_us(i2c_fp9, addr, &reg, 1, true, 1000);
-    // i2c_read_timeout_us(i2c_fp9, addr, msg->data, available, false, 10000);
-    msg->size = available;
-    return available > 0 ? true : false;
-}
-
-bool f9p_a_forward(f9p_message_t *msg)
-{
-    return i2c_forward(30, msg);
-}
-
-bool f9p_b_forward(f9p_message_t *msg)
-{
-    return i2c_forward(31, msg);
+    int read = i2c_read_timeout_per_char_us(i2c_f9p, addr, msg->data, available, false, 10);
+    msg->size = read >= 0 ? (int32_t)read : 0;
+    return available > 0;
 }

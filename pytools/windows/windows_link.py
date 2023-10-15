@@ -13,7 +13,7 @@ def load_script(script: bytes):
     path = Path("D:\\").joinpath("flash.uf2")
     for idx in range(20):
         
-        print(f"Lo0king for pico dir {idx}")
+        print(f"Looking for pico dir {idx}")
         
         if path.parent.exists():
             print("Trying to flash")
@@ -70,7 +70,6 @@ async def handle(websocket: WebSocketServerProtocol):
 
     elif websocket.path == "/forward":
         while True:
-            
             await forward(websocket)
             
     else:
