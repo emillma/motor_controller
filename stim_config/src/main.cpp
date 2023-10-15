@@ -25,6 +25,7 @@ int main()
         {
             usb_send_byte(uart_getc(uart1));
         }
+        usb_flush();
         while (true)
         {
             int c = getchar_timeout_us(0);
