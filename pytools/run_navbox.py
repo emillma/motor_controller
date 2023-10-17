@@ -83,7 +83,7 @@ def decode(data: bytes):
 async def reader(sock: WebSocketClientProtocol):
     rec: dict[int, bytearray] = dict()
     buffer = bytearray()
-    msg_regx = re.compile(b"\xfe([\x00-\xfd])(.*?)(?=\xfe[\x00-\xfd])", flags=re.DOTALL)
+    msg_regx = re.compile(b"\xde\xad\xbe(.)(.*?)(?=\xde\xad\xbe)", flags=re.DOTALL)
 
     t0 = time.perf_counter()
     total = 0
@@ -92,30 +92,8 @@ async def reader(sock: WebSocketClientProtocol):
         while match := msg_regx.search(buffer):
             buffer = buffer[match.end() :]
             key = int.from_bytes(match[1], "little")
-            val = re.sub(b"\xfe\xff", b"\xfe", match[2])
-            messages = StimHandler.parse(val)
-            print(key, len(val), StimHandler.show_counter(messages))
-            # print(key, len(val), StimHandler.show_latency(messages))
-            # if key == 1:
-        #         print(key, decode(val))
-        #     elif key == 90:
-        #         # ptin
-        #         # print(key, len(val))
-
-        #     elif key in {30, 31}:
-        #         print(key, val)
-        #     else:
-        #         print(key, len(val), val)
-        # print(key)
-        # # print(key, len(val), [len(v) for v in val.split(b"\x93")])
-        # for char in val:
-        #     if char == ord("\r"):
-        #         print()
-        #     else:
-        #         try:
-        #             print(chr(char), end="")
-        #         except UnicodeDecodeError:
-        #             print(char, end="")
+            messages = StimHandler.parse(match[2])
+            print(key, len(match[2]), StimHandler.show_counter(messages))
 
 
 async def writer(sock: WebSocketClientProtocol):

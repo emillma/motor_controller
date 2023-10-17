@@ -12,46 +12,36 @@
 #include "leds.hpp"
 #include "trigger_pio.hpp"
 #include "uart_pio.hpp"
-#include "queues.hpp"
 
 int main()
 {
     // set_sys_clock_khz(133000, true);
     stdio_init_all();
-
     init_led();
 
-    queue_init(&free_queue, sizeof(recording_t), queue_size);
-    queue_init(&full_queue, sizeof(recording_t), queue_size);
-    for (int i = 0; i < queue_size; i++)
-        queue_add_blocking(&free_queue, &recordings[i]);
-
-    reader_t reader = get_reader(9, 1843200, 9);
+    reader_t readers[] = {
+        get_reader(0, 1843200, 11),
+        get_reader(9, 1843200, 12),
+    };
 
     usb_init();
     init_trigger_pio();
-
     trigger_start();
-    char c;
-    // led_on();
+    watchdog_enable(1000, true);
+    reader_t *reader; // reader_t reader = readers[0];
     while (true)
     {
-        if (dma_channel_is_busy(reader.dma_chans[reader.current]))
+        for (int i = 0; i < 2; i++)
         {
-            int ready = reader.current;
-            reader_switch(&reader);
-            // usb_send_byte(read(reader.sm));
-            usb_send_id(reader.id);
-            usb_send_stuffed(reader.data[ready], chunk_size);
-            // usb_flush();
-            led_on();
+            reader = &readers[i];
+            if (dma_channel_is_busy(reader->dma_chans[reader->current]))
+            {
+                watchdog_update();
+                int ready = reader->current;
+                reader_switch(reader);
+                fwrite(reader->data[ready], 1, chunk_size, stdout);
+                blink_for(10);
+            }
         }
-        else
-        {
-            // led_off();
-            // usb_send_byte(0);
-            // usb_flush();
-        }
-        // usb_send_byte(read(reader.sm));
     }
 }
