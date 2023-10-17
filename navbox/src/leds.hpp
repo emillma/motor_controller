@@ -39,3 +39,8 @@ void led_off()
 {
     gpio_put(25, 0);
 }
+
+void led_set(bool state)
+{
+    gpio_put(25, state);
+}

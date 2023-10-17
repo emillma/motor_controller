@@ -7,7 +7,9 @@
 #include "hardware/dma.h"
 
 #define pio_uart pio1
-#define chunk_size 38 * 128 + 4
+// #define chunk_size 8192
+#define chunk_size 38 * 256 + 4
+
 typedef struct
 {
     uint8_t id;
