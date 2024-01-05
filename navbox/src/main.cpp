@@ -20,31 +20,28 @@ int main()
     stdio_init_all();
     init_led();
 
-    reader_t readers[] = {
-        get_reader(0, 1843200, 11),
-        get_reader(9, 1843200, 12),
-        get_reader(10, 1843200, 13),
+    std::array<reader_t, 3> readers = {
+        get_reader(9, 1843200, 9),
+        get_reader(27, 921600, 27),
+        get_reader(26, 921600, 26),
     };
 
     usb_init();
     init_trigger_pio();
     trigger_start();
-    watchdog_enable(1000, true);
-    reader_t *reader; // reader_t reader = readers[0];
+    watchdog_enable(10000, true);
+    // check if watchdog was triggered
 
     uint64_t time = time_us_64();
     while (true)
     {
-        for (int i = 0; i < 2; i++)
+        for (reader_t &reader : readers)
         {
-            reader = &readers[i];
-            if (dma_channel_is_busy(reader->dma_chans[reader->current]))
+            if (!dma_channel_is_busy(reader.dma_chans[reader.current]))
             {
-                watchdog_update();
-                int ready = reader->current;
-                reader_switch(reader);
                 blink_for(10);
-                fwrite(reader->data[ready], 1, chunk_size, stdout);
+                watchdog_update();
+                fwrite(reader_switch(reader), 1, chunk_size, stdout);
 
                 // led_toggle();
             }

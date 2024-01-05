@@ -8,6 +8,8 @@
         "*.spec": "python",
         "*.jinja": "jinja",
         "*.cu": "cuda-cpp",
-        "random": "cpp"
+        "*.py": "python",
+        "random": "cpp",
+        "array": "cpp"
     }
 }

@@ -82,18 +82,28 @@ def decode(data: bytes):
 
 async def reader(sock: WebSocketClientProtocol):
     rec: dict[int, bytearray] = dict()
+    received = 0 #2617297, 2616907, 3382763
     buffer = bytearray()
     msg_regx = re.compile(b"\xde\xad\xbe(.)(.*?)(?=\xde\xad\xbe)", flags=re.DOTALL)
 
     t0 = time.perf_counter()
     total = 0
+    file = Path("/workspaces/home/pico/pytools/data/stim.bin")
+    file.parent.mkdir(exist_ok=True)
     async for message in sock:
+        received += len(message)
         buffer.extend(message)
         while match := msg_regx.search(buffer):
             buffer = buffer[match.end() :]
             key = int.from_bytes(match[1], "little")
-            messages = StimHandler.parse(match[2])
-            print(key, len(match[2]), StimHandler.show_counter(messages))
+            data = match[2]
+            with open(file, "ab") as f:
+                f.write(data)
+            if key == 9:
+                messages = StimHandler.parse(match[2])
+                print(key, len(data), StimHandler.show_counter(messages))
+            else:
+                print(key, len(data))
 
 
 async def writer(sock: WebSocketClientProtocol):

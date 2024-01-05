@@ -7,8 +7,7 @@
 #include "hardware/dma.h"
 
 #define pio_uart pio1
-// #define chunk_size 8192
-#define chunk_size 38 * 256 + 4
+#define chunk_size 4096
 
 typedef struct
 {
@@ -67,11 +66,16 @@ static inline reader_t get_reader(uint pin, uint baud, uint8_t id)
         .current = 0};
     for (int i = 0; i < 2; i++)
     {
-        dma_channel_config config = dma_channel_get_default_config(reader.dma_chans[(i + 1) % 2]);
+
+        int next = (i + 1) % 2;
+        dma_channel_config config = dma_channel_get_default_config(reader.dma_chans[i]);
+
         channel_config_set_read_increment(&config, false);
         channel_config_set_write_increment(&config, true);
         channel_config_set_transfer_data_size(&config, DMA_SIZE_8);
         channel_config_set_dreq(&config, pio_get_dreq(pio_uart, reader.sm, false));
+        channel_config_set_chain_to(&config, reader.dma_chans[next]);
+
         reader.dma_config[i] = config;
         reader.data[i][0] = 0xde;
         reader.data[i][1] = 0xad;
@@ -95,15 +99,16 @@ static inline bool reader_ready(reader_t *reader)
     return !dma_channel_is_busy(reader->dma_chans[reader->current]);
 }
 
-static inline void reader_switch(reader_t *reader)
+static inline uint8_t *reader_switch(reader_t &reader)
 {
-    int i = reader->current;
+    int i = reader.current;
+    reader.current = (reader.current + 1) % 2;
     dma_channel_configure(
-        reader->dma_chans[i],
-        &reader->dma_config[i],
-        &reader->data[i][4],
-        &pio_uart->rxf[reader->sm],
+        reader.dma_chans[i],
+        &reader.dma_config[i],
+        &reader.data[i][4],
+        &pio_uart->rxf[reader.sm],
         chunk_size - 4,
         false);
-    reader->current = (reader->current + 1) % 2;
+    return reader.data[i];
 }
