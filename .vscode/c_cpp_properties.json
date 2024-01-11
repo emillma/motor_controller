@@ -3,10 +3,11 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "/include/pico-sdk/**",
+                "/include/no-OS-FatFS-SD-SPI-RPi-Pico/**"
+                // "${env:PICO_SDK_PATH}/**",
             ],
             "defines": [],
-            "compilerPath": "/usr/bin/gcc",
             "cStandard": "c17",
             "cppStandard": "gnu++17",
             "intelliSenseMode": "linux-gcc-x64",

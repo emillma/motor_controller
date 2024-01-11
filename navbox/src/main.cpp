@@ -8,11 +8,12 @@
 #include "pico/multicore.h"
 #include "hardware/watchdog.h"
 
-#include "interface_usb.hpp"
+// #include "interface_usb.hpp"
 #include "leds.hpp"
 #include "trigger_pio.hpp"
 #include "uart_pio.hpp"
 #include "button.hpp"
+#include "mpu6050.hpp"
 
 int main()
 {

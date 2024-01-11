@@ -23,3 +23,35 @@ void blink_fast()
         sleep_ms(50);
     }
 }
+
+void init_led()
+{
+    gpio_init(25);
+    gpio_set_dir(25, GPIO_OUT);
+    blink_fast();
+}
+
+void led_on()
+{
+    gpio_put(25, 1);
+}
+void led_off()
+{
+    gpio_put(25, 0);
+}
+
+void led_set(bool state)
+{
+    gpio_put(25, state);
+}
+
+void led_error(uint32_t duration = 500)
+{
+    while (true)
+    {
+        led_on();
+        sleep_ms(duration);
+        led_off();
+        sleep_ms(duration);
+    }
+}

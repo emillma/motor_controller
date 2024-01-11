@@ -5,17 +5,19 @@ import serial
 from websockets.legacy.server import Serve, WebSocketServerProtocol
 from wtools import get_url
 import serial.tools.list_ports
-
+import win32api
     
 
 
 def load_script(script: bytes):
-    path = Path("D:\\").joinpath("flash.uf2")
+    path = Path("E:\\").joinpath("flash.uf2")
     for idx in range(20):
         
         print(f"Looking for pico dir {idx}")
         
         if path.parent.exists():
+            print(win32api.GetVolumeInformation("C:\\"))
+            
             print("Trying to flash")
             with path.open("wb") as f:
                 f.write(script)

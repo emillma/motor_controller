@@ -1,3 +1,4 @@
 # src/pico-sdk/
 **/__pycache__/
 **/build
+**/data

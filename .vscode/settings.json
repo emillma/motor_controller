@@ -1,5 +1,5 @@
 {
-    "cmake.sourceDirectory": "/workspaces/home/pico/navbox",
+    "cmake.sourceDirectory": "/workspaces/pico/tracker_box",
     "C_Cpp.files.exclude": {
         "**/*.tmp": true,
         "**/.vscode": true
@@ -10,6 +10,13 @@
         "*.cu": "cuda-cpp",
         "*.py": "python",
         "random": "cpp",
-        "array": "cpp"
+        "array": "cpp",
+        "*.tcc": "cpp",
+        "memory": "cpp",
+        "istream": "cpp",
+        "functional": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp",
+        "ranges": "cpp"
     }
 }

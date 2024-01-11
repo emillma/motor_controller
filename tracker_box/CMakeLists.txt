@@ -1,39 +1,34 @@
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.12)
 
+include(/include/pico-sdk/external/pico_sdk_import.cmake)
+
+project(sd_fat_spi C CXX ASM)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 include(/include/pico-sdk/pico_sdk_init.cmake)
 pico_sdk_init()
 
-project(my_project)
+add_executable(${PROJECT_NAME} 
+    src/main.cpp
+    src/hw_config.cpp
+)
+pico_generate_pio_header(${PROJECT_NAME} ${CMAKE_CURRENT_LIST_DIR}/pio/uart.pio)
 
+add_subdirectory(/include/no-OS-FatFS-SD-SPI-RPi-Pico/FatFs_SPI build)
 
-add_executable(tracker_box 
-                "src/main.cpp")
+pico_add_extra_outputs(${PROJECT_NAME})
 
-# pico_generate_pio_header(tracker_box ${CMAKE_CURRENT_LIST_DIR}/pio/invert.pio)
-pico_generate_pio_header(tracker_box ${CMAKE_CURRENT_LIST_DIR}/pio/trigger.pio)
+target_link_libraries(${PROJECT_NAME} 
+    pico_stdlib
+    FatFs_SPI
+    hardware_spi
+    hardware_i2c
+    hardware_pio
+    hardware_dma
+    hardware_clocks
+)
 
-add_compile_definitions(PICO_STDIO_USB_RESET_MAGIC_BAUD_RATE=1200)
-
-target_link_libraries(tracker_box 
-        pico_stdlib 
-        hardware_pwm
-        pico_unique_id 
-        hardware_watchdog 
-        hardware_adc 
-        hardware_i2c
-        hardware_pio 
-        hardware_clocks 
-        hardware_spi 
-        pico_multicore
-        hardware_dma 
-        hardware_irq )
-        
-pico_enable_stdio_usb(tracker_box 1)
-pico_enable_stdio_uart(tracker_box 0)
-pico_add_extra_outputs(tracker_box)
-
-
-
-
- 
+# Enable usb output, disable uart output
+pico_enable_stdio_usb(${PROJECT_NAME} 1)
+pico_enable_stdio_uart(${PROJECT_NAME} 0)
