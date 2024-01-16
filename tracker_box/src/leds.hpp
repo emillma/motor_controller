@@ -14,10 +14,10 @@ void blink_for(uint32_t ms)
     add_alarm_in_ms(ms, turn_off, NULL, false);
 }
 
-void blink_fast()
+void blink_fast(uint32_t duration = 300)
 {
     uint32_t time = to_ms_since_boot(get_absolute_time());
-    while (to_ms_since_boot(get_absolute_time()) < time + 300)
+    while (to_ms_since_boot(get_absolute_time()) < time + duration)
     {
         blink_for(25);
         sleep_ms(50);

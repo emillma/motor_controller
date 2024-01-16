@@ -49,11 +49,15 @@ static inline int add_receiver(uint pin, uint baud)
     return sm;
 }
 
-static uint8_t
-read(int sm)
+static inline void configure(reader_t &reader, int i)
 {
-    uint32_t data = pio_sm_get_blocking(pio_uart, sm);
-    return (uint8_t)(data);
+    dma_channel_configure(
+        reader.dma_chans[i],
+        &reader.dma_config[i],
+        &reader.data[i][4],
+        &pio_uart->rxf[reader.sm],
+        chunk_size - 4,
+        false);
 }
 
 static inline reader_t get_reader(uint pin, uint baud, uint8_t id)
@@ -77,38 +81,27 @@ static inline reader_t get_reader(uint pin, uint baud, uint8_t id)
         channel_config_set_chain_to(&config, reader.dma_chans[next]);
 
         reader.dma_config[i] = config;
+
         reader.data[i][0] = 0xde;
         reader.data[i][1] = 0xad;
         reader.data[i][2] = 0xbe;
         reader.data[i][3] = id;
 
-        dma_channel_configure(
-            reader.dma_chans[i],
-            &reader.dma_config[i],
-            &reader.data[i][4],
-            &pio_uart->rxf[reader.sm],
-            chunk_size - 4,
-            false);
+        configure(reader, i);
     }
     dma_channel_start(reader.dma_chans[0]);
     return reader;
 }
 
-static inline bool reader_ready(reader_t *reader)
+static inline bool reader_ready(reader_t &reader)
 {
-    return !dma_channel_is_busy(reader->dma_chans[reader->current]);
+    return !dma_channel_is_busy(reader.dma_chans[reader.current]);
 }
 
 static inline uint8_t *reader_switch(reader_t &reader)
 {
     int i = reader.current;
     reader.current = (reader.current + 1) % 2;
-    dma_channel_configure(
-        reader.dma_chans[i],
-        &reader.dma_config[i],
-        &reader.data[i][4],
-        &pio_uart->rxf[reader.sm],
-        chunk_size - 4,
-        false);
+    configure(reader, i);
     return reader.data[i];
 }

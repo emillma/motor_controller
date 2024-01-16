@@ -10,7 +10,7 @@ import win32api
 
 
 def load_script(script: bytes):
-    path = Path("E:\\").joinpath("flash.uf2")
+    path = Path("D:\\").joinpath("flash.uf2")
     for idx in range(20):
         
         print(f"Looking for pico dir {idx}")

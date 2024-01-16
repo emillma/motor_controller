@@ -22,7 +22,7 @@ stamp:
     jmp wrap_target
 
 nostamp:
-    set pins 0b10[10]
+    set pins 0b10[9]
     set pins 0b11
 .wrap  
 

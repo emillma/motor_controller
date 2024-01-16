@@ -12,13 +12,12 @@
 #include "leds.hpp"
 #include "trigger_pio.hpp"
 #include "uart_pio.hpp"
-#include "button.hpp"
-#include "mpu6050.hpp"
 
 int main()
 {
     set_sys_clock_khz(133000, true);
     stdio_init_all();
+    stdio_set_translate_crlf(&stdio_usb, false);
     init_led();
 
     std::array<reader_t, 3> readers = {
@@ -27,40 +26,27 @@ int main()
         get_reader(26, 921600, 26),
     };
 
-    usb_init();
+    // usb_init();
     init_trigger_pio();
     trigger_start();
     watchdog_enable(10000, true);
     // check if watchdog was triggered
-
+    uint8_t sep[] = {0xde, 0xad, 0xbe, 0xef};
     uint64_t time = time_us_64();
+    uint8_t data[chunk_size];
+    // fill data with 0xff
+    uint8_t *ptr = data;
+    memset(data, 0xff, chunk_size);
     while (true)
     {
         for (reader_t &reader : readers)
         {
             if (!dma_channel_is_busy(reader.dma_chans[reader.current]))
             {
-                blink_for(10);
+                blink_for(50);
                 watchdog_update();
-                fwrite(reader_switch(reader), 1, chunk_size, stdout);
-
-                // led_toggle();
-            }
-        }
-
-        if (time_us_64() - time > 10000)
-        {
-            time = time_us_64();
-            if (get_bootsel_button())
-            {
-                while (true)
-                {
-                    watchdog_update();
-                    led_on();
-                    sleep_ms(400);
-                    led_off();
-                    sleep_ms(400);
-                }
+                ptr = reader_switch(reader);
+                fwrite(ptr, 1, chunk_size, stdout);
             }
         }
     }
