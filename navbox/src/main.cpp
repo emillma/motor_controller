@@ -26,27 +26,19 @@ int main()
         get_reader(26, 921600, 26),
     };
 
-    // usb_init();
     init_trigger_pio();
-    trigger_start();
-    watchdog_enable(10000, true);
-    // check if watchdog was triggered
-    uint8_t sep[] = {0xde, 0xad, 0xbe, 0xef};
-    uint64_t time = time_us_64();
-    uint8_t data[chunk_size];
-    // fill data with 0xff
-    uint8_t *ptr = data;
-    memset(data, 0xff, chunk_size);
+    // watchdog_enable(10000, true);
+    add_alarm_in_ms(8000, trigger_start, NULL, true);
     while (true)
     {
         for (reader_t &reader : readers)
         {
             if (!dma_channel_is_busy(reader.dma_chans[reader.current]))
             {
-                blink_for(50);
-                watchdog_update();
-                ptr = reader_switch(reader);
-                fwrite(ptr, 1, chunk_size, stdout);
+                blink_for(10);
+                // watchdog_update();
+                puts()
+                fwrite(reader_switch(reader), 1, chunk_size, stdout);
             }
         }
     }

@@ -41,12 +41,13 @@ static inline void init_trigger_pio()
     //  init
     pio_sm_set_pins(trigger_pio, pin_trigger, 1);
     pio_sm_init(trigger_pio, trigger_sm, offset, &c);
-    pio_sm_put(trigger_pio, trigger_sm, (uint32_t)2000);
+    pio_sm_put(trigger_pio, trigger_sm, (uint32_t)(2049 - 1));
 }
 
-static inline void trigger_start()
+static int64_t trigger_start(alarm_id_t id, void *user_data)
 {
     pio_sm_set_enabled(trigger_pio, trigger_sm, true);
+    return 0;
 }
 
 static inline uint32_t trigger_pio_get()
