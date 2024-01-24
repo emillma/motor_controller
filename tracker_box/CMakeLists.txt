@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
 include(/include/pico-sdk/external/pico_sdk_import.cmake)
-
 project(sd_fat_spi C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
@@ -19,6 +18,7 @@ add_subdirectory(/include/no-OS-FatFS-SD-SPI-RPi-Pico/FatFs_SPI build)
 
 pico_add_extra_outputs(${PROJECT_NAME})
 
+add_compile_definitions(PICO_STDIO_USB_RESET_MAGIC_BAUD_RATE=1200)
 target_link_libraries(${PROJECT_NAME} 
     pico_stdlib
     FatFs_SPI
