@@ -19,7 +19,7 @@ async def writer(sock: WebSocketClientProtocol):
 async def main():
     build_dir = Path(__file__).parents[1] / "build"
     build_dir.mkdir(exist_ok=True)
-    project_dir = Path(__file__).parents[1] / "tracker_box"
+    project_dir = Path(__file__).parents[1] / "pps_sim"
     await build_and_flash(build_dir, project_dir)
     
     await connect_over_ws(reader, writer)

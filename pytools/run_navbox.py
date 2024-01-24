@@ -114,7 +114,7 @@ async def main():
     build_dir.mkdir(exist_ok=True)
     project_dir = Path(__file__).parents[1] / "navbox"
 
-    await build_and_flash(build_dir, project_dir)
+    # await build_and_flash(build_dir, project_dir)
 
     print("Connecting")
     await connect_over_ws(reader, writer)

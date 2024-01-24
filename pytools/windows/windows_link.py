@@ -10,16 +10,17 @@ import win32api
 
 
 def load_script(script: bytes):
-    path = Path("D:\\").joinpath("flash.uf2")
+    # path = Path("E:\\").joinpath("flash.uf2")
+    drive = Path("E:\\")
     for idx in range(20):
         
         print(f"Looking for pico dir {idx}")
         
-        if path.parent.exists():
-            print(win32api.GetVolumeInformation("C:\\"))
-            
+        if drive.exists():
+            info = win32api.GetVolumeInformation(str(drive))
+            assert info[0] == "RPI-RP2"
             print("Trying to flash")
-            with path.open("wb") as f:
+            with drive.joinpath("flash.uf2").open("wb") as f:
                 f.write(script)
             print("Wrote script")
             return
