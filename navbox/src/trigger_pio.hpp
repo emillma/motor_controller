@@ -37,11 +37,12 @@ static inline void init_trigger_pio()
     float div = clock_get_hz(clk_sys) / 1e7;
     sm_config_set_clkdiv(&c, div);
 
+    sm_config_set_in_shift(&c, false, false, 32);
+
     //  init
     pio_sm_set_pins(trigger_pio, pin_trigger, 1);
     pio_sm_init(trigger_pio, trigger_sm, offset, &c);
-    pio_sm_put(trigger_pio, trigger_sm, (uint32_t)(2048 - 1 - 30 - 1));
-    pio_sm_put(trigger_pio, trigger_sm, (uint32_t)(2048 - 1 + 30));
+    pio_sm_put(trigger_pio, trigger_sm, (uint32_t)(0b100000));
 }
 
 static int64_t trigger_start(alarm_id_t id, void *user_data)
