@@ -27,7 +27,6 @@ int main()
     };
 
     init_trigger_pio();
-    // watchdog_enable(10000, true);
     add_alarm_in_ms(8000, trigger_start, NULL, true);
     while (true)
     {
@@ -35,9 +34,7 @@ int main()
         {
             if (!dma_channel_is_busy(reader.dma_chans[reader.current]))
             {
-                blink_for(10);
-                // watchdog_update();
-                puts()
+                // blink_for(10);
                 fwrite(reader_switch(reader), 1, chunk_size, stdout);
             }
         }
