@@ -3,7 +3,8 @@
 #include "pico/stdlib.h"
 #include "hardware/clocks.h"
 
-static PIO trigger_pio;
+#define trigger_pio pio0
+
 static int trigger_sm;
 
 static inline void init_trigger_pio()
@@ -13,8 +14,6 @@ static inline void init_trigger_pio()
     const auto pin_stamp = 21;
 
     const auto pin_led = 25;
-
-    trigger_pio = pio0;
 
     trigger_sm = pio_claim_unused_sm(trigger_pio, true);
     uint offset = pio_add_program(trigger_pio, &trigger_program);
@@ -41,7 +40,8 @@ static inline void init_trigger_pio()
     //  init
     pio_sm_set_pins(trigger_pio, pin_trigger, 1);
     pio_sm_init(trigger_pio, trigger_sm, offset, &c);
-    pio_sm_put(trigger_pio, trigger_sm, (uint32_t)(2048 + 1 - 1));
+    pio_sm_put(trigger_pio, trigger_sm, (uint32_t)(2048 - 1 - 30 - 1));
+    pio_sm_put(trigger_pio, trigger_sm, (uint32_t)(2048 - 1 + 30));
 }
 
 static int64_t trigger_start(alarm_id_t id, void *user_data)

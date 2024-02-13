@@ -1,5 +1,5 @@
 {
-    "cmake.sourceDirectory": "/workspaces/pico/tracker_box",
+    "cmake.sourceDirectory": "/workspaces/pico/navbox",
     "C_Cpp.files.exclude": {
         "**/*.tmp": true,
         "**/.vscode": true
@@ -17,6 +17,7 @@
         "functional": "cpp",
         "tuple": "cpp",
         "utility": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "pico.h": "c"
     }
 }

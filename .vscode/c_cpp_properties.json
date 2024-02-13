@@ -3,8 +3,13 @@
         {
             "name": "Linux",
             "includePath": [
-                "/include/pico-sdk/**",
-                "/include/no-OS-FatFS-SD-SPI-RPi-Pico/**"
+                // "/include/pico-sdk/src/rp2_common/**",
+                "/include/pico-sdk/src/common/**",
+                // "/include/pico-sdk/src/rp2_common/pico_stdio/include",
+                // "/include/pico-sdk/src/boards/include/boards"
+                // "/include/pico-sdk/src/common/pico_base/include"
+                // "/include/pico-sdk/src/rp2_common/pico_stdio/include",
+                // "/include/no-OS-FatFS-SD-SPI-RPi-Pico/**"
                 // "${env:PICO_SDK_PATH}/**",
             ],
             "defines": [],

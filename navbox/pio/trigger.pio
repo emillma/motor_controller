@@ -1,21 +1,33 @@
 
 .program trigger
     pull block
+    mov osr y
+
+    pull block
+    mov isr osr
 .wrap_target
 wrap_target:
     wait 1 pin 0
     wait 0 pin 0
+    
     jmp x-- nostamp
-
 stamp:
     nop [24]
     nop [24]
     nop [24]
     nop [24]
+
     set pins 0b00 [9]
     set pins 0b11
 
+    mov x isr
+    jmp x-- no_jump
+no_jump:
+    jmp x!=y no_reset
     mov x osr
+no_reset:
+    mov isr x
+
     jmp wrap_target
 
 nostamp:

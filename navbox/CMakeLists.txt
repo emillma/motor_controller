@@ -9,7 +9,6 @@ project(my_project)
 
 add_executable(navbox 
                 "src/main.cpp")
-
 pico_generate_pio_header(navbox ${CMAKE_CURRENT_LIST_DIR}/pio/invert.pio)
 pico_generate_pio_header(navbox ${CMAKE_CURRENT_LIST_DIR}/pio/trigger.pio)
 pico_generate_pio_header(navbox ${CMAKE_CURRENT_LIST_DIR}/pio/uart.pio)

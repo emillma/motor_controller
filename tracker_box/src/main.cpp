@@ -17,7 +17,8 @@ int main()
 
     char dirname[32];
     char filename[64];
-
+    
+    set_sys_clock_khz(133000, true);
     stdio_init_all();
     init_led();
     i2c_init();

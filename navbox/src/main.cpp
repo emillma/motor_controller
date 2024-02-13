@@ -18,7 +18,7 @@ int main()
     set_sys_clock_khz(133000, true);
     stdio_init_all();
     stdio_set_translate_crlf(&stdio_usb, false);
-    init_led();
+    // init_led();
 
     std::array<reader_t, 3> readers = {
         get_reader(9, 1843200, 9),
@@ -27,7 +27,8 @@ int main()
     };
 
     init_trigger_pio();
-    add_alarm_in_ms(8000, trigger_start, NULL, true);
+    add_alarm_in_ms(0, trigger_start, NULL, true);
+
     while (true)
     {
         for (reader_t &reader : readers)
