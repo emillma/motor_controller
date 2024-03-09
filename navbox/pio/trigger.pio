@@ -9,10 +9,11 @@ wrap_target:
     
     jmp x-- nostamp
 stamp:
-    nop [24]
-    nop [24]
-    nop [24]
-    nop [24]
+
+    set x 20
+repeat_wait:
+    nop [8]
+    jmp x-- repeat_wait
 
     set pins 0b00 [9]
     set pins 0b11
