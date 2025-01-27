@@ -10,27 +10,25 @@ wrap_target:
     jmp x-- nostamp
 stamp:
 
+    ; wait for 20 us
     set x 20
 repeat_wait:
     nop [8]
     jmp x-- repeat_wait
 
-    set pins 0b00 [9]
+    set pins 0b00 [29]
     set pins 0b11
 
     mov isr osr
+    in y 7
+    mov x isr
     jmp y-- nojump_a
 nojump_a:
-
-    in y 6
-    mov x isr
     
-    jmp x-- nojump_b
-nojump_b:
-
     jmp wrap_target
+
 nostamp:
-    set pins 0b10[9]
+    set pins 0b10[29]
     set pins 0b11
 .wrap  
 
